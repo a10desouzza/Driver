@@ -1,0 +1,429 @@
+.global mapear_fpga
+.type mapear_fpga, %function
+.global reiniciar_fpga
+.type reiniciar_fpga, %function
+.global carregar_pesos
+.type carregar_pesos, %function
+.global carregar_beta
+.type carregar_beta, %function
+.global carregar_bias
+.type carregar_bias, %function
+.global carregar_imagem
+.type carregar_imagem, %function
+.global iniciar_inferencia
+.type iniciar_inferencia, %function
+.global obter_resultado
+.type obter_resultado, %function
+.global ler_status_fpga
+.type ler_status_fpga, %function
+
+.section .data
+dev_mem:  .asciz "/dev/mem"
+
+.section .bss
+.balign 4
+base:    .space 4
+buf_w:   .space 200704
+buf_bt:  .space 2560
+buf_bs:  .space 256
+buf_img: .space 784
+
+.section .text
+
+mapear_fpga:
+    push {r4, r5, r7, lr}             
+    mov  r7, #5                      
+    ldr  r0, =dev_mem                 
+    ldr  r1, =0x101002               
+    mov  r2, #0                       
+    svc  0                            
+    cmp  r0, #0
+    bge  mem_ok
+    mov  r0, #-1                      
+    pop  {r4, r5, r7, pc}             
+
+mem_ok:
+    mov  r4, r0                       
+    mov  r7, #192                     
+    mov  r0, #0                     
+    mov  r1, #4096                    
+    mov  r2, #3                       
+    mov  r3, #1                       
+    ldr  r5, =0xFF200000              
+    lsr  r5, r5, #12                  
+    svc  0                            
+
+    cmn  r0, #4096                    
+    bcc  mmap_ok
+    mov  r0, #-2                      
+    pop  {r4, r5, r7, pc}             
+
+mmap_ok:
+    ldr  r1, =base                    
+    str  r0, [r1]                     
+
+    mov  r0, #0                       
+    pop  {r4, r5, r7, pc}             
+
+reiniciar_fpga:
+    push {r9, lr}                     
+    ldr  r9, =base
+    ldr  r9, [r9]                     
+
+    cmp  r9, #0                       
+    beq  rst_err                      
+
+    dsb
+    mov  r3, #0x4                     
+    str  r3, [r9, #0x10]              
+    dsb
+    mov  r3, #0                       
+    str  r3, [r9, #0x10]              
+    dsb
+
+    mov  r0, #0                       
+    pop  {r9, pc}
+
+rst_err:
+    mov  r0, #-1                      
+    pop  {r9, pc}
+
+
+carregar_pesos:
+    push {r4, r7, r9-r11, lr}         
+    ldr  r9, =base
+    ldr  r9, [r9]                     
+
+    mov  r7, #5                       
+    mov  r1, #0                       
+    mov  r2, #0
+    svc  0
+    cmp  r0, #0
+    bge  w_ok
+    mov  r0, #-3                      
+    pop  {r4, r7, r9-r11, pc}         
+
+w_ok:
+    mov  r4, r0                       
+
+    ldr  r1, =buf_w                   
+    mov  r2, #200704                  
+    mov  r7, #3                       
+    svc  0                            
+
+    mov  r7, #6                      
+    mov  r0, r4
+    svc  0                            
+
+    mov  r10, #0                      
+    ldr  r11, =100352                 
+
+loop_w:
+    cmp  r10, r11
+    bhs  w_done                       
+
+    lsl  r0, r10, #1                  
+    ldr  r3, =buf_w
+    ldrh r0, [r3, r0]                 
+    rev16 r0, r0                      
+
+    mov  r1, r10                      
+    bl   fmt_w_addr                   
+    bl   send_cmd                     
+    bl   wait_busy                    
+
+    bl   fmt_w_val                    
+    bl   send_cmd
+    bl   wait_busy
+    bl   chk_err                      
+    cmp  r0, #0
+    blt  end_w                        
+
+    add  r10, r10, #1
+    b    loop_w
+
+w_done:
+    mov  r0, #0                       
+end_w:
+    pop  {r4, r7, r9-r11, pc}         
+
+carregar_beta:
+    push {r4, r7, r9-r11, lr}         
+    ldr  r9, =base
+    ldr  r9, [r9]
+
+    mov  r7, #5                      
+    mov  r1, #0
+    mov  r2, #0
+    svc  0
+    cmp  r0, #0
+    bge  bt_ok
+    mov  r0, #-4
+    pop  {r4, r7, r9-r11, pc}         
+
+bt_ok:
+    mov  r4, r0
+
+    ldr  r1, =buf_bt
+    mov  r2, #2560                    
+    mov  r7, #3
+    svc  0
+
+    mov  r7, #6
+    mov  r0, r4
+    svc  0
+
+    mov  r10, #0
+    mov  r11, #1280
+
+loop_bt:
+    cmp  r10, r11
+    bhs  bt_done
+
+    lsl  r0, r10, #1
+    ldr  r3, =buf_bt
+    ldrh r0, [r3, r0]
+    rev16 r0, r0
+
+    mov  r1, r10
+    bl   fmt_bt
+    bl   send_cmd
+    bl   wait_busy
+    bl   chk_err
+    cmp  r0, #0
+    blt  end_bt
+
+    add  r10, r10, #1
+    b    loop_bt
+
+bt_done:
+    mov  r0, #0
+end_bt:
+    pop  {r4, r7, r9-r11, pc}         
+
+carregar_bias:
+    push {r4, r7, r9-r11, lr}         
+    ldr  r9, =base
+    ldr  r9, [r9]
+
+    mov  r7, #5                       
+    mov  r1, #0
+    mov  r2, #0
+    svc  0
+    cmp  r0, #0
+    bge  bs_ok
+    mov  r0, #-5
+    pop  {r4, r7, r9-r11, pc}         
+
+bs_ok:
+    mov  r4, r0
+
+    ldr  r1, =buf_bs
+    mov  r2, #256                     
+    mov  r7, #3
+    svc  0
+
+    mov  r7, #6
+    mov  r0, r4
+    svc  0
+
+    mov  r10, #0
+    mov  r11, #128
+
+loop_bs:
+    cmp  r10, r11
+    bhs  bs_done
+
+    lsl  r0, r10, #1
+    ldr  r3, =buf_bs
+    ldrh r0, [r3, r0]
+    rev16 r0, r0
+
+    mov  r1, r10
+    bl   fmt_bs
+    bl   send_cmd
+    bl   wait_busy
+    bl   chk_err
+    cmp  r0, #0
+    blt  end_bs
+
+    add  r10, r10, #1
+    b    loop_bs
+
+bs_done:
+    mov  r0, #0
+end_bs:
+    pop  {r4, r7, r9-r11, pc}         
+
+carregar_imagem:
+    push {r4, r7, r9-r11, lr}         
+    ldr  r9, =base
+    ldr  r9, [r9]
+
+    mov  r7, #5                       
+    mov  r1, #0
+    mov  r2, #0
+    svc  0
+    cmp  r0, #0
+    bge  img_ok
+    mov  r0, #-6
+    pop  {r4, r7, r9-r11, pc}         
+
+img_ok:
+    mov  r4, r0
+
+    ldr  r1, =buf_img
+    mov  r2, #784
+    mov  r7, #3
+    svc  0
+    cmp  r0, #1                       
+    bge  img_lida
+
+    mov  r7, #6                       
+    mov  r0, r4
+    svc  0
+    mov  r0, #-7
+    pop  {r4, r7, r9-r11, pc}         
+
+img_lida:
+    mov  r7, #6
+    mov  r0, r4
+    svc  0
+
+    mov  r10, #0
+    mov  r11, #784
+
+loop_img:
+    cmp  r10, r11
+    bhs  img_done
+
+    ldr  r3, =buf_img
+    ldrb r0, [r3, r10]                
+    mov  r1, r10
+    bl   fmt_img
+    bl   send_cmd
+    bl   wait_busy
+    bl   chk_err
+    cmp  r0, #0
+    blt  end_img
+
+    add  r10, r10, #1
+    b    loop_img
+
+img_done:
+    mov  r0, #0
+end_img:
+    pop  {r4, r7, r9-r11, pc}         
+
+iniciar_inferencia:
+    push {r9, lr}                     
+    ldr  r9, =base
+    ldr  r9, [r9]
+
+    mov  r2, #5                       
+    dsb
+    str  r2, [r9, #0x20]              
+    dsb
+    mov  r3, #1
+    str  r3, [r9, #0x10]              
+    dsb
+    mov  r3, #0
+    str  r3, [r9, #0x10]              
+    dsb
+
+    mov  r0, #0
+    pop  {r9, pc}
+
+obter_resultado:
+    push {r9, lr}                     
+    ldr  r9, =base
+    ldr  r9, [r9]
+
+poll_done:
+    dsb                               
+    ldr  r0, [r9, #0x00]              
+    tst  r0, #0x10                    
+    beq  poll_done                    
+
+    and  r0, r0, #0xF                 
+    pop  {r9, pc}
+
+ler_status_fpga:
+    push {r3, lr}                     
+    ldr  r3, =base
+    ldr  r3, [r3]                     
+    dsb                               
+    ldr  r0, [r3, #0x00]              
+    pop  {r3, pc}
+
+.ltorg
+
+fmt_img:
+    lsl  r2, r0, #13
+    lsl  r3, r1, #3
+    orr  r2, r2, r3
+    bx   lr
+
+fmt_w_addr:
+    lsl  r2, r1, #3
+    orr  r2, r2, #1
+    bx   lr
+
+fmt_w_val:
+    lsl  r2, r0, #3
+    orr  r2, r2, #2
+    bx   lr
+
+fmt_bs:
+    lsl  r2, r0, #10
+    lsl  r3, r1, #3
+    orr  r2, r2, r3
+    orr  r2, r2, #3
+    bx   lr
+
+fmt_bt:
+    lsl  r2, r0, #14
+    lsl  r3, r1, #3
+    orr  r2, r2, r3
+    orr  r2, r2, #4
+    bx   lr
+
+send_cmd:
+    dsb
+    str  r2, [r9, #0x20]             
+    dsb
+    mov  r3, #1
+    str  r3, [r9, #0x10]             
+    dsb
+    mov  r3, #0
+    str  r3, [r9, #0x10]             
+    dsb
+    ldr  r3, [r9, #0x00]             
+    ldr  r3, [r9, #0x00]             
+    bx   lr
+
+wait_busy:
+    dsb
+poll_busy:
+    ldr  r3, [r9, #0x00]             
+    tst  r3, #0x20                   
+    bne  poll_busy                   
+    bx   lr
+
+chk_err:
+    ldr  r3, [r9, #0x00]             
+    tst  r3, #0x40                   
+    bne  chk_fail
+    mov  r0, #0                       
+    bx   lr
+
+chk_fail:
+    dsb
+    mov  r3, #2                       
+    str  r3, [r9, #0x10]             
+    dsb
+    mov  r3, #0
+    str  r3, [r9, #0x10]             
+    dsb
+    mov  r0, #-99                     
+    bx   lr
