@@ -13,11 +13,21 @@
 #define ELM_BIT_DONE   (1 << 4)
 #define ELM_BIT_BUSY   (1 << 5)
 #define ELM_BIT_ERROR  (1 << 6)
+#define ELM_MASK_DIGIT 0xF
 
 #define ELM_SIG_ENABLE  (1 << 0)
 #define ELM_SIG_CLR_OP  (1 << 1)
 #define ELM_SIG_RESET   (1 << 2)
 
+#define ELM_OK              0
+#define ELM_ERR_DEVMEM     -1
+#define ELM_ERR_MMAP       -2
+#define ELM_ERR_FILE_W     -3
+#define ELM_ERR_FILE_BT    -4
+#define ELM_ERR_FILE_BS    -5
+#define ELM_ERR_FILE_IMG   -6
+#define ELM_ERR_READ_IMG   -7
+#define ELM_ERR_FPGA       -99
 
 int mapear_fpga(void);
 int reiniciar_fpga(void);
