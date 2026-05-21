@@ -1,9 +1,3 @@
-@ ============================================================
-@ Driver ELM — ARM Assembly (ARMv7, Linux userspace)
-@ Placa Alvo: DE1-SoC (Cortex-A9)
-@ Versão sem dsb, sem .ltorg e sem .syntax unified
-@ ============================================================
-
 .global mapear_fpga
 .type mapear_fpga, %function
 .global reiniciar_fpga
@@ -23,11 +17,9 @@
 .global ler_status_fpga
 .type ler_status_fpga, %function
 
-@ ── Seção .data ─────────────────────────────────────────────
 .section .data
 dev_mem:  .asciz "/dev/mem"
 
-@ ── Seção .bss (Buffers) ────────────────────────────────────
 .section .bss
 .balign 4
 base:    .space 4
@@ -36,12 +28,8 @@ buf_bt:  .space 2560
 buf_bs:  .space 256
 buf_img: .space 784
 
-@ ── Seção .text (Código) ────────────────────────────────────
 .section .text
 
-@ ============================================================
-@ FUNÇÃO DE USO INTERNO: ler_arquivo
-@ ============================================================
 .type ler_arquivo, %function
 ler_arquivo:
     push {r4-r7, lr}
@@ -73,9 +61,7 @@ err_io:
     mov  r0, #-1
     pop  {r4-r7, pc}
 
-@ ============================================================
-@ FUNÇÃO DE USO INTERNO: send_cmd
-@ ============================================================
+
 .type send_cmd, %function
 send_cmd:
     str  r2, [r9, #0x20]              
@@ -102,10 +88,6 @@ send_cmd:
     str  r3, [r9, #0x10]              
     mov  r0, #-99                     
     bx   lr
-
-@ ============================================================
-@ FUNÇÕES EXPORTADAS (C API)
-@ ============================================================
 
 mapear_fpga:
     push {r4, r5, r7, lr}             

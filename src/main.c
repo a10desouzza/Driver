@@ -23,7 +23,6 @@ void imprimir_status(void) {
     printf("| DATA_OUT: 0x%02X\n", s);
 }
 
-/* Explorador de Arquivos Interativo */
 int selecionar_arquivo(const char *tipo_parametro, const char *pasta_inicial, char *caminho_saida, size_t tam_max) {
     char pasta_atual[512];
     strncpy(pasta_atual, pasta_inicial, sizeof(pasta_atual));
@@ -92,7 +91,6 @@ int selecionar_arquivo(const char *tipo_parametro, const char *pasta_inicial, ch
     }
 }
 
-/* Inferencia em Lote Recursiva (Com auto-reset embutido) */
 void processar_pasta_recursiva(const char *pasta, int *total_processado) {
     DIR *dir = opendir(pasta);
     if (!dir) return;
@@ -121,7 +119,6 @@ void processar_pasta_recursiva(const char *pasta, int *total_processado) {
             int resultado = obter_resultado();
             printf("    [+] >> DIGITO PREDITO PELA FPGA: %d <<\n", resultado);
             
-            // -> RESET OBRIGATORIO APOS CADA INFERENCIA DO LOTE <-
             reiniciar_fpga();
 
             (*total_processado)++;
@@ -147,21 +144,19 @@ int main(void) {
     }
     printf("[+] FPGA mapeada com sucesso!\n");
 
-    // -> RESET OBRIGATORIO NO INICIO DO PROGRAMA <-
     printf("[*] Aplicando RESET inicial obrigatorio...\n");
     reiniciar_fpga();
     imprimir_status();
 
     while (1) {
-        // Menu reestruturado para remover a opcao de Reset manual
         printf("\n====================== MENU ======================\n");
-        printf(" 1. Escolher e Carregar Pesos (W_in)\n");
-        printf(" 2. Escolher e Carregar Coeficientes (Beta)\n");
+        printf(" 1. Escolher e Carregar Pesos \n");
+        printf(" 2. Escolher e Carregar Coeficientes \n");
         printf(" 3. Escolher e Carregar Bias\n");
-        printf(" 4. Escolher e Carregar UMA Imagem (Com pastas)\n");
-        printf(" 5. Disparar Inferencia (Comando START)\n");
-        printf(" 6. Ler Resultado (Realiza AUTO-RESET ao fim)\n");
-        printf(" 7. LOTE RECURSIVO: Rodar TODAS imagens das subpastas\n");
+        printf(" 4. Escolher e Carregar UMA Imagem \n");
+        printf(" 5. Disparar Inferencia n");
+        printf(" 6. Ler Resultado \n");
+        printf(" 7. Rodar TODAS imagens das subpastas\n");
         printf(" 8. Verificar Status Atual dos Registradores\n");
         printf(" 0. Sair\n");
         printf("==================================================\n");
@@ -227,8 +222,6 @@ int main(void) {
                 printf("\n========================================\n");
                 printf("  RESULTADO OBTIDO: Digito %d\n", res);
                 printf("========================================\n");
-                
-                // -> AUTO-RESET OBRIGATÓRIO APÓS A LEITURA <-
                 printf("\n[*] Aplicando RESET automatico da FSM para liberar a proxima execucao...\n");
                 reiniciar_fpga();
                 imprimir_status();
