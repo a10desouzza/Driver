@@ -50,31 +50,31 @@ int reiniciar_fpga(void);
 /**
  * @brief Escreve um valor de 32 bits no registrador de controle do FPGA, envia cada peso via send_cmd em 2 comandos por peso.
  * @param valor O valor a ser escrito.
- * @return 0 em caso de sucesso, -1 em caso de mapeamento não realizado.
+ * @return 0 em caso de sucesso, -2 em caso de mapeamento não realizado.
  */
 int carregar_pesos(const char *caminho);
 /** 
  * @brief Carrega os pesos do modelo ELM a partir de um arquivo binário.
  * @param caminho O caminho para o arquivo de pesos.
- * @return 0 em caso de sucesso, -1 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
+ * @return 0 em caso de sucesso, -3 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
 */
 int carregar_beta(const char *caminho);
 /**
  * @brief Carrega os coeficientes beta do modelo ELM a partir de um arquivo binário.
  * @param caminho O caminho para o arquivo de coeficientes beta.    
- * @return 0 em caso de sucesso, -1 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
+ * @return 0 em caso de sucesso, -4 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
  */
 int carregar_bias(const char *caminho);
 /**
  * @brief Carrega os valores de bias do modelo ELM a partir de um arquivo binário.
  * @param caminho O caminho para o arquivo de bias.
- * @return 0 em caso de sucesso, -1 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
+ * @return 0 em caso de sucesso, -5 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
  */
 int carregar_imagem(const char *caminho);
 /**
  * @brief Carrega os dados de entrada (imagem) para o FPGA a partir de um arquivo binário.
  * @param caminho O caminho para o arquivo de imagem.
- * @return 0 em caso de sucesso, -1 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
+ * @return 0 em caso de sucesso, -6 em caso de arquivo inválido, -7 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
  */
 int iniciar_inferencia(void);
 /**
