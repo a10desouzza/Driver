@@ -1,3 +1,14 @@
+/*
+ * elm_driver.h - Driver para controle do FPGA ELM
+ *
+ * Autores: Pedro Henrique, Lucas Vilas Boas Dourado, Arthur Souza
+ * Data: 21 de maio de 2026
+ * Versao: 1.0
+ *
+ * Descricao:
+ * Este arquivo testa as funcoes e constantes necessarias para interagir com o FPGA ELM,
+ * incluindo mapeamento de memoria, controle de sinais e leitura/escrita de dados
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
