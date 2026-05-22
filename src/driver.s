@@ -30,284 +30,370 @@ buf_img: .space 784
 
 .section .text
 
-.type ler_arquivo, %function
-ler_arquivo:
-    push {r4-r7, lr}
-    mov  r4, r1                       
-    mov  r5, r2                       
+mapear_fpga:
+    push {r4, r5, r7, lr}
+
+    mov  r7, #5
+    ldr  r0, =dev_mem
+    ldr  r1, =0x101002
+    mov  r2, #0
+    svc  0
+    cmp  r0, #0
+    bge  mem_ok
+    mov  r0, #-1
+    pop  {r4, r5, r7, pc}
+
+mem_ok:
+    mov  r4, r0
+
+    mov  r7, #192
+    mov  r0, #0
+    mov  r1, #4096
+    mov  r2, #3
+    mov  r3, #1
+    ldr  r5, =0xFF200000
+    lsr  r5, r5, #12
+    svc  0
+
+    cmn  r0, #4096
+    bcc  mmap_ok
+    mov  r0, #-2
+    pop  {r4, r5, r7, pc}
+
+mmap_ok:
+    ldr  r1, =base
+    str  r0, [r1]
+
+    mov  r0, #0
+    pop  {r4, r5, r7, pc}
+
+reiniciar_fpga:
+    push {r9, lr}
+    ldr  r9, =base
+    ldr  r9, [r9]
+
+    cmp  r9, #0
+    beq  rst_err
+
+    mov  r3, #0x4
+    str  r3, [r9, #0x10]
+    mov  r3, #0
+    str  r3, [r9, #0x10]
+
+    mov  r0, #0
+    pop  {r9, pc}
+
+rst_err:
+    mov  r0, #-1
+    pop  {r9, pc}
+
+carregar_pesos:
+    push {r4, r7, r9-r11, lr}
+    ldr  r9, =base
+    ldr  r9, [r9]
 
     mov  r7, #5
     mov  r1, #0
     mov  r2, #0
     svc  0
     cmp  r0, #0
-    blt  err_io
+    bge  w_ok
+    mov  r0, #-3
+    pop  {r4, r7, r9-r11, pc}
 
-    mov  r6, r0                       
+w_ok:
+    mov  r4, r0
 
+    ldr  r1, =buf_w
+    mov  r2, #200704
     mov  r7, #3
-    mov  r1, r4
-    mov  r2, r5
     svc  0
 
     mov  r7, #6
-    mov  r0, r6
+    mov  r0, r4
     svc  0
 
-    mov  r0, #0
-    pop  {r4-r7, pc}
-
-err_io:
-    mov  r0, #-1
-    pop  {r4-r7, pc}
-
-
-.type send_cmd, %function
-send_cmd:
-    str  r2, [r9, #0x20]              
-    mov  r3, #1
-    str  r3, [r9, #0x10]              
-    mov  r3, #0
-    str  r3, [r9, #0x10]              
-
-1:  
-    ldr  r3, [r9, #0x00]              
-    tst  r3, #0x20                    
-    bne  1b                           
-
-    tst  r3, #0x40                    
-    bne  2f                           
-
-    mov  r0, #0                       
-    bx   lr
-
-2:  
-    mov  r3, #2
-    str  r3, [r9, #0x10]              
-    mov  r3, #0
-    str  r3, [r9, #0x10]              
-    mov  r0, #-99                     
-    bx   lr
-
-mapear_fpga:
-    push {r4, r5, r7, lr}             
-    mov  r7, #5                       
-    ldr  r0, =dev_mem                 
-    ldr  r1, =0x101002                
-    mov  r2, #0                       
-    svc  0                            
-    cmp  r0, #0
-    bge  mem_ok
-    mov  r0, #-1                      
-    pop  {r4, r5, r7, pc}             
-
-mem_ok:
-    mov  r7, #192                     
-    mov  r4, r0                       
-    mov  r0, #0                       
-    mov  r1, #4096                    
-    mov  r2, #3                       
-    mov  r3, #1                       
-    ldr  r5, =0xFF200000              
-    lsr  r5, r5, #12                  
-    svc  0                            
-    cmn  r0, #4096                    
-    bcc  mmap_ok
-    mov  r0, #-2                      
-    pop  {r4, r5, r7, pc}             
-
-mmap_ok:
-    ldr  r1, =base                    
-    str  r0, [r1]                     
-    mov  r0, #0                       
-    pop  {r4, r5, r7, pc}             
-
-reiniciar_fpga:
-    ldr  r1, =base
-    ldr  r1, [r1]                     
-    cmp  r1, #0                       
-    moveq r0, #-1
-    bxeq lr
-    mov  r3, #0x4                     
-    str  r3, [r1, #0x10]              
-    mov  r3, #0                       
-    str  r3, [r1, #0x10]              
-    mov  r0, #0                       
-    bx   lr
-
-carregar_pesos:
-    push {r9-r11, lr}
-    ldr  r1, =buf_w                   
-    ldr  r2, =200704
-    bl   ler_arquivo
-    cmp  r0, #0
-    blt  end_load_w
-
-    ldr  r9, =base
-    ldr  r9, [r9]
     mov  r10, #0
     ldr  r11, =100352
 
 loop_w:
     cmp  r10, r11
-    bhs  ok_load_w
-
-    lsl  r2, r10, #3
-    orr  r2, r2, #1
-    bl   send_cmd
-    cmp  r0, #0
-    blt  end_load_w
+    bhs  w_done
 
     lsl  r0, r10, #1
     ldr  r3, =buf_w
     ldrh r0, [r3, r0]
     rev16 r0, r0
-    lsl  r2, r0, #3
-    orr  r2, r2, #2
+
+    mov  r1, r10
+    bl   fmt_w_addr
     bl   send_cmd
+
+    bl   fmt_w_val
+    bl   send_cmd
+    bl   chk_err
     cmp  r0, #0
-    blt  end_load_w
+    blt  end_w
 
     add  r10, r10, #1
     b    loop_w
 
-ok_load_w:
+w_done:
     mov  r0, #0
-end_load_w:
-    pop  {r9-r11, pc}
+end_w:
+    pop  {r4, r7, r9-r11, pc}
 
 carregar_beta:
-    push {r9-r11, lr}
-    ldr  r1, =buf_bt
-    ldr  r2, =2560
-    bl   ler_arquivo
-    cmp  r0, #0
-    blt  end_load_bt
-
+    push {r4, r7, r9-r11, lr}
     ldr  r9, =base
     ldr  r9, [r9]
+
+    mov  r7, #5
+    mov  r1, #0
+    mov  r2, #0
+    svc  0
+    cmp  r0, #0
+    bge  bt_ok
+    mov  r0, #-4
+    pop  {r4, r7, r9-r11, pc}
+
+bt_ok:
+    mov  r4, r0
+
+    ldr  r1, =buf_bt
+    mov  r2, #2560
+    mov  r7, #3
+    svc  0
+
+    mov  r7, #6
+    mov  r0, r4
+    svc  0
+
     mov  r10, #0
-    ldr  r11, =1280
+    mov  r11, #1280
 
 loop_bt:
     cmp  r10, r11
-    bhs  ok_load_bt
+    bhs  bt_done
 
     lsl  r0, r10, #1
     ldr  r3, =buf_bt
     ldrh r0, [r3, r0]
     rev16 r0, r0
-    lsl  r2, r0, #14
-    lsl  r3, r10, #3
-    orr  r2, r2, r3
-    orr  r2, r2, #4
+
+    mov  r1, r10
+    bl   fmt_bt
     bl   send_cmd
+    bl   chk_err
     cmp  r0, #0
-    blt  end_load_bt
+    blt  end_bt
 
     add  r10, r10, #1
     b    loop_bt
 
-ok_load_bt:
+bt_done:
     mov  r0, #0
-end_load_bt:
-    pop  {r9-r11, pc}
+end_bt:
+    pop  {r4, r7, r9-r11, pc}
 
 carregar_bias:
-    push {r9-r11, lr}
-    ldr  r1, =buf_bs
-    ldr  r2, =256
-    bl   ler_arquivo
-    cmp  r0, #0
-    blt  end_load_bs
-
+    push {r4, r7, r9-r11, lr}
     ldr  r9, =base
     ldr  r9, [r9]
+
+    mov  r7, #5
+    mov  r1, #0
+    mov  r2, #0
+    svc  0
+    cmp  r0, #0
+    bge  bs_ok
+    mov  r0, #-5
+    pop  {r4, r7, r9-r11, pc}
+
+bs_ok:
+    mov  r4, r0
+
+    ldr  r1, =buf_bs
+    mov  r2, #256
+    mov  r7, #3
+    svc  0
+
+    mov  r7, #6
+    mov  r0, r4
+    svc  0
+
     mov  r10, #0
     mov  r11, #128
 
 loop_bs:
     cmp  r10, r11
-    bhs  ok_load_bs
+    bhs  bs_done
 
     lsl  r0, r10, #1
     ldr  r3, =buf_bs
     ldrh r0, [r3, r0]
     rev16 r0, r0
-    lsl  r2, r0, #10
-    lsl  r3, r10, #3
-    orr  r2, r2, r3
-    orr  r2, r2, #3
+
+    mov  r1, r10
+    bl   fmt_bs
     bl   send_cmd
+    bl   chk_err
     cmp  r0, #0
-    blt  end_load_bs
+    blt  end_bs
 
     add  r10, r10, #1
     b    loop_bs
 
-ok_load_bs:
+bs_done:
     mov  r0, #0
-end_load_bs:
-    pop  {r9-r11, pc}
+end_bs:
+    pop  {r4, r7, r9-r11, pc}
 
 carregar_imagem:
-    push {r9-r11, lr}
-    ldr  r1, =buf_img
-    ldr  r2, =784
-    bl   ler_arquivo
-    cmp  r0, #0
-    blt  end_load_img
-
+    push {r4, r7, r9-r11, lr}
     ldr  r9, =base
     ldr  r9, [r9]
+
+    mov  r7, #5
+    mov  r1, #0
+    mov  r2, #0
+    svc  0
+    cmp  r0, #0
+    bge  img_ok
+    mov  r0, #-6
+    pop  {r4, r7, r9-r11, pc}
+
+img_ok:
+    mov  r4, r0
+
+    ldr  r1, =buf_img
+    mov  r2, #784
+    mov  r7, #3
+    svc  0
+    cmp  r0, #1
+    bge  img_lida
+
+    mov  r7, #6
+    mov  r0, r4
+    svc  0
+    mov  r0, #-7
+    pop  {r4, r7, r9-r11, pc}
+
+img_lida:
+    mov  r7, #6
+    mov  r0, r4
+    svc  0
+
     mov  r10, #0
     mov  r11, #784
 
 loop_img:
     cmp  r10, r11
-    bhs  ok_load_img
+    bhs  img_done
 
     ldr  r3, =buf_img
     ldrb r0, [r3, r10]
-    lsl  r2, r0, #13
-    lsl  r3, r10, #3
-    orr  r2, r2, r3
+    mov  r1, r10
+    bl   fmt_img
     bl   send_cmd
+    bl   chk_err
     cmp  r0, #0
-    blt  end_load_img
+    blt  end_img
 
     add  r10, r10, #1
     b    loop_img
 
-ok_load_img:
+img_done:
     mov  r0, #0
-end_load_img:
-    pop  {r9-r11, pc}
+end_img:
+    pop  {r4, r7, r9-r11, pc}
 
 iniciar_inferencia:
-    ldr  r1, =base
-    ldr  r1, [r1]
+    push {r9, lr}
+    ldr  r9, =base
+    ldr  r9, [r9]
+
     mov  r2, #5
-    str  r2, [r1, #0x20]
+    str  r2, [r9, #0x20]
     mov  r3, #1
-    str  r3, [r1, #0x10]
+    str  r3, [r9, #0x10]
     mov  r3, #0
-    str  r3, [r1, #0x10]
+    str  r3, [r9, #0x10]
+
+    mov  r0, #0
+    pop  {r9, pc}
+
+obter_resultado:
+    push {r9, lr}
+    ldr  r9, =base
+    ldr  r9, [r9]
+
+poll_done:
+    ldr  r0, [r9, #0x00]
+    tst  r0, #0x10
+    beq  poll_done
+
+    and  r0, r0, #0xF
+    pop  {r9, pc}
+
+ler_status_fpga:
+    push {r3, lr}
+    ldr  r3, =base
+    ldr  r3, [r3]
+    ldr  r0, [r3, #0x00]
+    pop  {r3, pc}
+
+fmt_img:
+    lsl  r2, r0, #13
+    lsl  r3, r1, #3
+    orr  r2, r2, r3
+    bx   lr
+
+fmt_w_addr:
+    lsl  r2, r1, #3
+    orr  r2, r2, #1
+    bx   lr
+
+fmt_w_val:
+    lsl  r2, r0, #3
+    orr  r2, r2, #2
+    bx   lr
+
+fmt_bs:
+    lsl  r2, r0, #10
+    lsl  r3, r1, #3
+    orr  r2, r2, r3
+    orr  r2, r2, #3
+    bx   lr
+
+fmt_bt:
+    lsl  r2, r0, #14
+    lsl  r3, r1, #3
+    orr  r2, r2, r3
+    orr  r2, r2, #4
+    bx   lr
+
+send_cmd:
+    str  r2, [r9, #0x20]
+    mov  r3, #1
+    str  r3, [r9, #0x10]
+    mov  r3, #0
+    str  r3, [r9, #0x10]
+    ldr  r3, [r9, #0x00]
+    ldr  r3, [r9, #0x00]
+    bx   lr
+
+chk_err:
+    ldr  r3, [r9, #0x00]
+    tst  r3, #0x40
+    bne  chk_fail
     mov  r0, #0
     bx   lr
 
-obter_resultado:
-    ldr  r1, =base
-    ldr  r1, [r1]
-1:  
-    ldr  r0, [r1, #0x00]              
-    tst  r0, #0x10                    
-    beq  1b                           
-    and  r0, r0, #0xF                 
-    bx   lr
-
-ler_status_fpga:
-    ldr  r1, =base
-    ldr  r1, [r1]                     
-    ldr  r0, [r1, #0x00]              
+chk_fail:
+    mov  r3, #2
+    str  r3, [r9, #0x10]
+    mov  r3, #0
+    str  r3, [r9, #0x10]
+    mov  r0, #-99
     bx   lr
