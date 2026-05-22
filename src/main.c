@@ -37,13 +37,13 @@ void processar_pasta_recursiva(const char *pasta, int *total_processado) {
         } 
         else if (entrada->d_type == DT_REG) {
             printf("\n[*] Processando: %s\n", caminho_completo);
-            /*
+            
             int ret = carregar_imagem(caminho_completo);
             if (ret != ELM_OK) {
                 printf("    [-] Erro ao carregar (Codigo: %d).\n", ret);
                 continue;
             }
-            */
+            
             iniciar_inferencia();
             int resultado = obter_resultado();
             printf("    [+] >> DIGITO PREDITO PELA FPGA: %d <<\n", resultado);
