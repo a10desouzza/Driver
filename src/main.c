@@ -73,6 +73,9 @@ int main(void) {
     printf("\n[TESTE 1] Protecao contra comando precoce e operacao invalida\n");
     iniciar_inferencia();
     imprimir_status();
+    
+    int status_lixo = ler_status_fpga();
+    printf("    [+] >> DIGITO PREDITO PELA FPGA (Lixo): %d <<\n", status_lixo & ELM_MASK_DIGIT);
 
     ret = carregar_pesos(PATH_WEIGHTS);
     if (ret == ELM_ERR_FPGA) {
