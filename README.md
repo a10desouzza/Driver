@@ -27,8 +27,7 @@ O `sudo su` é necessário porque o driver precisa de acesso root para abrir `/d
 2. Testbench
 Antes de carregar qualquer parâmetro, o `main` chama `iniciar_inferencia()` de propósito, para ver se a FPGA bloqueia o comando. Depois lê o status com `imprimir_status()`, que decodifica o registrador de hardware e imprime flags legíveis como `[BUSY]` ou `[ERRO]`
 exemplo de como e mostrado no terminal: 
-'''
-root@de1soc:/home/aluno/Driver# ./elm
+```bash
 ==================================================
    TESTBENCH AUTOMATIZADO - ELM CO-PROCESSOR      
 ==================================================
@@ -61,8 +60,7 @@ root@de1soc:/home/aluno/Driver# ./elm
 ==================================================
    FIM DO TESTBENCH: 3 imagens inferidas na FPGA.
 ==================================================
-root@de1soc:/home/aluno/Driver#
-'''
+```
 
 4. Acurácia — bias correto vs bias zerado
 Rodamos o teste 3 duas vezes: uma com os parâmetros reais e outra substituindo o `bias_q.bin` por um arquivo de zeros do mesmo tamanho.
