@@ -16,7 +16,7 @@ O programa consiste em um arquivo .s (Código em Assembly), um arquivo .h (Arqui
 Entradas: O Driver tem a função de direcionar as entradas do programa ao coprocessador, sendo esses a imagem, os arquivos de pesos e de viéses. Além disso, o Driver envia instruções de 32 Bits para o coprocessador, cada uma dessas, com sua função e resposta do coprocessador.
 Saídas: O CoProcessador retorna, além de seu estado, o resultado da predição, encontrado após a inferência.
 # Testes e Resultados
-1. *Como executar*
+1. Como executar
 ```bash
 sudo su
 gcc main.c driver.s -o elm -I. -no-pie
