@@ -1,3 +1,14 @@
+/*
+ * elm_driver.h - Driver para controle do FPGA ELM
+ *
+ * Autores: Pedro Henrique, Lucas Vilas Boas Dourado, Arthur Souza
+ * Data: 21 de maio de 2026
+ * Versao: 1.0
+ *
+ * Descricao:
+ * Este arquivo testa as funcoes e constantes necessarias para interagir com o FPGA ELM,
+ * incluindo mapeamento de memoria, controle de sinais e leitura/escrita de dados
+ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +19,10 @@
 #define PATH_BETA    "../data/beta_q.bin"
 #define PATH_BIAS    "../data/bias_q.bin"
 #define PASTA_IMAGE  "../data/image"
+
+//#define PATH_WEIGHTS "../data/w_in_q_0.bin"
+//#define PATH_BETA    "../data/beta_q_0.bin"
+//#define PATH_BIAS    "../data/bias_q_0.bin"
 
 void imprimir_status(void) {
     int s = ler_status_fpga();
@@ -37,13 +52,13 @@ void processar_pasta_recursiva(const char *pasta, int *total_processado) {
         } 
         else if (entrada->d_type == DT_REG) {
             printf("\n[*] Processando: %s\n", caminho_completo);
-
+            
             int ret = carregar_imagem(caminho_completo);
             if (ret != ELM_OK) {
                 printf("    [-] Erro ao carregar (Codigo: %d).\n", ret);
                 continue;
             }
-
+            
             iniciar_inferencia();
             int resultado = obter_resultado();
             printf("    [+] >> DIGITO PREDITO PELA FPGA: %d <<\n", resultado);
@@ -74,7 +89,7 @@ int main(void) {
     iniciar_inferencia();
     imprimir_status();
     
-    int status_lixo = ler_status_fpga();
+    int status_lixo = obter_resultado();
     printf("    [+] >> DIGITO PREDITO PELA FPGA (Lixo): %d <<\n", status_lixo & ELM_MASK_DIGIT);
 
     ret = carregar_pesos(PATH_WEIGHTS);

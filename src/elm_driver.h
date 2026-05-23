@@ -3,11 +3,11 @@
  *
  * Autores: Pedro Henrique, Lucas Vilas Boas Dourado, Arthur Souza
  * Data: 21 de maio de 2026
- * Versão: 1.0
+ * Versao: 1.0
  *
- * Descrição:
- *   Este arquivo define as funções e constantes necessárias para interagir com o FPGA ELM,
- *   incluindo mapeamento de memória, controle de sinais e leitura/escrita de dados
+ * Descricao:
+ * Este arquivo define as funcoes e constantes necessarias para interagir com o FPGA ELM,
+ * incluindo mapeamento de memoria, controle de sinais e leitura/escrita de dados
  */
 
 #ifndef ELM_DRIVER_H
@@ -15,71 +15,92 @@
 
 #include <stdint.h>
 
-#define ELM_BRIDGE_PHYS      0xFF200000UL
-#define ELM_BRIDGE_PAGE_SIZE 4096
+/* --- Enderecos e Tamanhos de Memoria --- */
+#define ELM_BRIDGE_PHYS      0xFF200000UL /* Endereco fisico base da ponte HPS-FPGA */
+#define ELM_BRIDGE_PAGE_SIZE 4096         /* Tamanho da pagina para mapeamento (4KB) */
 
-#define ELM_REG_DATA_OUT  0x00
-#define ELM_REG_SIGNALS   0x10
-#define ELM_REG_DATA_IN   0x20
+/* --- Offsets dos Registradores --- */
+#define ELM_REG_DATA_OUT  0x00            /* Registrador para ler dados e status da FPGA */
+#define ELM_REG_SIGNALS   0x10            /* Registrador para enviar sinais de controle */
+#define ELM_REG_DATA_IN   0x20            /* Registrador para enviar instrucoes/dados */
 
-#define ELM_BIT_DONE   (1 << 4)
-#define ELM_BIT_BUSY   (1 << 5)
-#define ELM_BIT_ERROR  (1 << 6)
+/* --- Mascaras do Registrador de Saida (DATA_OUT) --- */
+#define ELM_BIT_DONE   (1 << 4)           /* Flag indicando inferencia concluida */
+#define ELM_BIT_BUSY   (1 << 5)           /* Flag indicando FPGA ocupada processando */
+#define ELM_BIT_ERROR  (1 << 6)           /* Flag indicando erro de hardware/operacao */
+#define ELM_MASK_DIGIT 0xF                /* Mascara (bits 0-3) para extrair o digito predito */
 
-#define ELM_SIG_ENABLE  (1 << 0)
-#define ELM_SIG_CLR_OP  (1 << 1)
-#define ELM_SIG_RESET   (1 << 2)
+/* --- Sinais de Controle (SIGNALS) --- */
+#define ELM_SIG_ENABLE  (1 << 0)          /* Pulso para validar dado no DATA_IN */
+#define ELM_SIG_CLR_OP  (1 << 1)          /* Pulso para limpar erro de operacao (Clear) */
+#define ELM_SIG_RESET   (1 << 2)          /* Pulso de Reset geral da maquina de estados */
+
+/* --- Codigos de Retorno padronizados --- */
+#define ELM_OK              0
+#define ELM_ERR_DEVMEM     -1
+#define ELM_ERR_MMAP       -2
+#define ELM_ERR_FILE_W     -3
+#define ELM_ERR_FILE_BT    -4
+#define ELM_ERR_FILE_BS    -5
+#define ELM_ERR_FILE_IMG   -6
+#define ELM_ERR_READ_IMG   -7
+#define ELM_ERR_FPGA       -99
 
 
+/* --- Prototipos das Funcoes --- */
+
+/* Mapeia a memoria fisica da FPGA para o Linux
+ * Espera: Nada (void)
+ * Retorna: 0 (Sucesso), -1 (Erro /dev/mem) ou -2 (Erro mmap)
+ */
 int mapear_fpga(void);
-/**
- * @brief Mapeia os registradores do FPGA para o espaço de usuário, permitindo acesso direto à ponte LW via ponteiro de memória.
- * @return 0 em caso de sucesso, -1 em caso de erro na leitura de "/dev/mem" e -2 em caso de falha de mmap()
+
+/* Aplica o pulso de reset na maquina de estados da FPGA
+ * Espera: Nada (void)
+ * Retorna: 0 (Sucesso) ou -1 (Erro se memoria nao estiver mapeada)
  */
 int reiniciar_fpga(void);
-/**
- * @brief Escreve um valor de 32 bits no registrador de controle do FPGA, envia cada peso via send_cmd em 2 comandos por peso.
- * @param valor O valor a ser escrito.
- * @return 0 em caso de sucesso, -1 em caso de mapeamento não realizado.
+
+/* Le o arquivo binario e envia os pesos para a memoria da FPGA
+ * Espera: caminho (String com o local do arquivo)
+ * Retorna: 0 (Sucesso), < 0 (Erro arquivo) ou -99 (Erro interno FPGA)
  */
 int carregar_pesos(const char *caminho);
-/** 
- * @brief Carrega os pesos do modelo ELM a partir de um arquivo binário.
- * @param caminho O caminho para o arquivo de pesos.
- * @return 0 em caso de sucesso, -1 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
-*/
+
+/* Le o arquivo binario e envia os coeficientes beta para a FPGA
+ * Espera: caminho (String com o local do arquivo)
+ * Retorna: 0 (Sucesso), < 0 (Erro arquivo) ou -99 (Erro interno FPGA)
+ */
 int carregar_beta(const char *caminho);
-/**
- * @brief Carrega os coeficientes beta do modelo ELM a partir de um arquivo binário.
- * @param caminho O caminho para o arquivo de coeficientes beta.    
- * @return 0 em caso de sucesso, -1 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
+
+/* Le o arquivo binario e envia os valores de bias para a FPGA
+ * Espera: caminho (String com o local do arquivo)
+ * Retorna: 0 (Sucesso), < 0 (Erro arquivo) ou -99 (Erro interno FPGA)
  */
 int carregar_bias(const char *caminho);
-/**
- * @brief Carrega os valores de bias do modelo ELM a partir de um arquivo binário.
- * @param caminho O caminho para o arquivo de bias.
- * @return 0 em caso de sucesso, -1 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
+
+/* Le o arquivo binario e envia os pixels da imagem para a FPGA
+ * Espera: caminho (String com o local do arquivo)
+ * Retorna: 0 (Sucesso), < 0 (Erro arquivo) ou -99 (Erro interno FPGA)
  */
 int carregar_imagem(const char *caminho);
-/**
- * @brief Carrega os dados de entrada (imagem) para o FPGA a partir de um arquivo binário.
- * @param caminho O caminho para o arquivo de imagem.
- * @return 0 em caso de sucesso, -1 em caso de falha ao abrir o arquivo ou -99 em falha de envio da instrução para o FPGA.
+
+/* Envia o comando START para a FPGA iniciar a classificacao
+ * Espera: Nada (void)
+ * Retorna: 0 (Sempre sucesso na emissao)
  */
 int iniciar_inferencia(void);
-/**
- * @brief Inicia o processo de inferência no FPGA, configurando os sinais de controle adequados.
- * @return 0 em todos os casos.
+
+/* Funcao bloqueante que aguarda a flag DONE e extrai o resultado
+ * Espera: Nada (void)
+ * Retorna: Digito classificado (0 a 9)
  */
 int obter_resultado(void);
-/**
- * @brief Lê o resultado da inferência do FPGA, verificando os sinais de status para garantir que a operação foi concluída com sucesso.
- * @return O resultado da inferência em caso de sucesso, 0 a 9 e quaisquer outros valores são possíveis erros de inferência.
+
+/* Funcao nao-bloqueante que le o estado atual do registrador de saida
+ * Espera: Nada (void)
+ * Retorna: Valor bruto contendo os bits de status e o digito
  */
 int ler_status_fpga(void);
-/**
- * @brief Lê o status atual do FPGA, verificando os sinais de controle para determinar se a operação foi concluída, se o FPGA está ocupado ou se ocorreu um erro.
- * @return O valor do registrador de sinais do FPGA, onde os bits indicam o status da operação.
- */
 
 #endif
