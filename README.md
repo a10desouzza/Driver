@@ -74,7 +74,7 @@ exemplo de como e mostrado no terminal:
 ==================================================
 ```
 
-3. Taxa de acertos
+2. Taxa de acertos
 
 Rodamos o teste duas vezes: uma com os parâmetros reais e outra substituindo o bias_q.bin por um arquivo de zeros do mesmo tamanho.
 
