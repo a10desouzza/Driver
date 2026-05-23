@@ -13,9 +13,10 @@ O programa consiste em um arquivo .s (Código em Assembly), um arquivo .h (Arqui
    - Na Placa De1-SoC é possivel utilizar-se da HPS Altera, uma ponte de conexão entre o ARMv7 e os circuitos funcionando na FPGA.
    - Seu uso se dá através de canais de memória, com endereços definidos, que podem ser acessados para leitura ou escrita de dados, por ambos os lados integrados, mesmo que nenhum tenha acesso definitivo ao outro. O Driver escreve em certos endereços, as entradas do coprocessador, e em outros, realiza a leitura de sua saída.
 # Metodologia
-Entradas: O Driver tem a função de direcionar as entradas do programa ao coprocessador, sendo esses a imagem, os arquivos de pesos e de viéses. Além disso, o Driver envia instruções de 32 Bits para o coprocessador, cada uma dessas, com sua função e resposta do coprocessador.
+Entradas: O CoProcessador deve receber as entradas do seu sistema, essas sendo o arquivo da imagem, o arquivo de pesos e o arquivo dos viéses, além dos bits da instrução, já que o CoProcessador só vai carregar, calcular ou enviar, após receber a instrução de 32bits relacionada.
 
 Saídas: O CoProcessador retorna, além de seu estado, o resultado da predição, encontrado após a inferência.
+
 
 1. Como executar
 ```bash
@@ -88,3 +89,8 @@ Rodamos o teste duas vezes: uma com os parâmetros reais e outra substituindo o 
 A diferença foi de apenas 1 imagem. Os erros que mudaram entre os dois testes foram opostos — um erro que virou acerto e um acerto que virou erro — o que mostra que o bias zerado não prejudicou nenhuma classe específica. A maior parte do trabalho da rede está nos pesos e no beta.
 
 O dígito 5 foi o que gerou mais erros (6/10), o coprocessador identificou ele como 6, 9 e até 1.
+
+#Conclusão
+O Driver possui uma ligação funcional e estável com o CoProcessador, fornecendo tudo que é necessário para que esse realize sua função. A Taxa de 83% de acerto e o jeito em que o Driver funciona são resultado de uma estrutura estável de projeto, porém existe um erro de planejamento, que gera a necessidade de uma atualização para uso futuro: Nosso driver tem acesso ao disco rígido do computador, através do svc (systemcall), algo que um driver não deveria fazer, embora tenha sido a maneira que encontramos de resolver o problema, entendemos hoje que isso deve ser mudado.
+
+Entretanto, de forma geral, acreditamos que conseguimos alcançar o objetivo final, de maneira aceitável.
