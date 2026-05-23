@@ -63,6 +63,7 @@ exemplo de como e mostrado no terminal:
 ```
 
 4. Acurácia — bias correto vs bias zerado
+
 Rodamos o teste 3 duas vezes: uma com os parâmetros reais e outra substituindo o `bias_q.bin` por um arquivo de zeros do mesmo tamanho.
 
 | Configuração | Acertos | Acurácia |
@@ -73,9 +74,13 @@ Rodamos o teste 3 duas vezes: uma com os parâmetros reais e outra substituindo 
 A diferença foi de apenas 1 imagem. Os erros que mudaram entre os dois testes foram opostos — um erro que virou acerto e um acerto que virou erro — o que mostra que o bias zerado não prejudicou nenhuma classe específica. A maior parte do trabalho da rede está nos pesos e no beta.
 
 O dígito `5` foi o mais difícil nos dois casos (6/10), sendo confundido com `6`, `9` e `1`. Isso independe do bias.
+
 4. Erros encontrados no desenvolvimento
+
 O primeiro problema foi na função `mapear_fpga`: estávamos passando um endereço físico errado para o `mmap2`. O resultado foi que todas as escritas nos registradores da FPGA iam para uma região inválida do barramento e simplesmente não chegavam ao hardware.
+
 O segundo problema foi das Endianness trocada os arquivos `.bin` dos parâmetros foram gerados em big-endian, mas o ARM opera em little-endian. Cada valor de 16 bits chegava com os bytes trocados — um bias `FBEB` virava `EBFB`, as imagens nao tiveram esse problema, pois cada pixel da imagem corespondia a 8 bits.
+
 A correção foi adicionar `rev16` em todos os loops de leitura de parâmetros:
 
 ```asm
