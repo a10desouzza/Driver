@@ -26,7 +26,7 @@ O sudo su é necessário porque o driver precisa de acesso root para abrir /dev/
 
 O primeiro problema foi na função mapear_fpga: estávamos passando um endereço físico errado para o mmap2. O resultado foi que todas as escritas nos registradores da FPGA iam para uma região inválida do barramento e simplesmente não chegavam ao hardware.
 
-O segundo problema foi das Endianness trocada os arquivos `.bin` dos parâmetros foram gerados em big-endian, mas o ARM opera em little-endian. Cada valor de 16 bits chegava com os bytes trocados — um bias FBEB virava EBFB, as imagens nao tiveram esse problema, pois cada pixel da imagem corespondia a 8 bits.
+O segundo problema foi das Endianness trocada os arquivos .bin dos parâmetros foram gerados em big-endian, mas o ARM opera em little-endian. Cada valor de 16 bits chegava com os bytes trocados — um bias FBEB virava EBFB, as imagens nao tiveram esse problema, pois cada pixel da imagem corespondia a 8 bits.
 
 A correção foi adicionar rev16 em todos os loops de leitura de parâmetros:
 
