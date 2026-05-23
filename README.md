@@ -16,7 +16,7 @@ O programa consiste em um arquivo .s (Código em Assembly), um arquivo .h (Arqui
 Entradas: O Driver tem a função de direcionar as entradas do programa ao coprocessador, sendo esses a imagem, os arquivos de pesos e de viéses. Além disso, o Driver envia instruções de 32 Bits para o coprocessador, cada uma dessas, com sua função e resposta do coprocessador.
 Saídas: O CoProcessador retorna, além de seu estado, o resultado da predição, encontrado após a inferência.
 # Testes e Resultados
-1. Como executar
+## Como executar
 ```bash
 sudo su
 gcc main.c driver.s -o elm -I. -no-pie
@@ -24,7 +24,7 @@ gcc main.c driver.s -o elm -I. -no-pie
 ```
 O `sudo su` é necessário porque o driver precisa de acesso root para abrir `/dev/mem` — sem isso ele falha logo na primeira chamada. O `-no-pie` desativa o PIE (Position Independent Executable) para que o linker aceite misturar o `main.c` com o `driver.s` sem conflito de relocações.
 
-2. Testbench
+## Testbench
 Antes de carregar qualquer parâmetro, o `main` chama `iniciar_inferencia()` de propósito, para ver se a FPGA bloqueia o comando. Depois lê o status com `imprimir_status()`, que decodifica o registrador de hardware e imprime flags legíveis como `[BUSY]` ou `[ERRO]`
 exemplo de como e mostrado no terminal: 
 ```bash
@@ -62,7 +62,7 @@ exemplo de como e mostrado no terminal:
 ==================================================
 ```
 
-4. Acurácia — bias correto vs bias zerado
+## Acurácia — bias correto vs bias zerado
 
 Rodamos o teste 3 duas vezes: uma com os parâmetros reais e outra substituindo o `bias_q.bin` por um arquivo de zeros do mesmo tamanho.
 
@@ -75,7 +75,7 @@ A diferença foi de apenas 1 imagem. Os erros que mudaram entre os dois testes f
 
 O dígito `5` foi o mais difícil nos dois casos (6/10), sendo confundido com `6`, `9` e `1`. Isso independe do bias.
 
-4. Erros encontrados no desenvolvimento
+## Erros encontrados no desenvolvimento
 
 O primeiro problema foi na função `mapear_fpga`: estávamos passando um endereço físico errado para o `mmap2`. O resultado foi que todas as escritas nos registradores da FPGA iam para uma região inválida do barramento e simplesmente não chegavam ao hardware.
 
