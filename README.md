@@ -143,7 +143,7 @@ A diferença foi de apenas 1 imagem. Os erros que mudaram entre os dois testes f
 
 O dígito 5 foi o que gerou mais erros (6/10), o coprocessador identificou ele como 6, 9 e até 1.
 
-#Conclusão
+# Conclusão
 O Driver possui uma ligação funcional e estável com o CoProcessador, fornecendo tudo que é necessário para que esse realize sua função. A Taxa de 83% de acerto e o jeito em que o Driver funciona são resultado de uma estrutura estável de projeto, porém existe um erro de planejamento, que gera a necessidade de uma atualização para uso futuro: Nosso driver tem acesso ao disco rígido do computador, através do svc (systemcall), algo que um driver não deveria fazer, embora tenha sido a maneira que encontramos de resolver o problema, entendemos hoje que isso deve ser mudado.
 
 Entretanto, de forma geral, acreditamos que conseguimos alcançar o objetivo final, de maneira aceitável.
