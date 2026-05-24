@@ -90,7 +90,7 @@ rev16 r0, r0         @ corrige a ordem dos bytes
 ```
 4. Fluxo de dados
 
-![Diagrama de Envio dos Dados](Driver/Fluxo-dados.png)
+![Diagrama de Envio dos Dados](Fluxo-dados.png)
 								   
 # Testes e Resultados
 1. Testbench
