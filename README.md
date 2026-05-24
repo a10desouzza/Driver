@@ -12,6 +12,9 @@ O programa consiste em um arquivo .s (Código em Assembly), um arquivo .h (Arqui
 2. HPS Altera
    - Na Placa De1-SoC é possivel utilizar-se da HPS Altera, uma ponte de conexão entre o ARMv7 e os circuitos funcionando na FPGA.
    - Seu uso se dá através de canais de memória, com endereços definidos, que podem ser acessados para leitura ou escrita de dados, por ambos os lados integrados, mesmo que nenhum tenha acesso definitivo ao outro. O Driver escreve em certos endereços, as entradas do coprocessador, e em outros, realiza a leitura de sua saída.
+3. AXI Bridge
+   - Embora a HPS consiga conectar os dois sistemas, eles utilizam uma arquitetura de dados diferente, principalmente partindo do ARMv7 para a FPGA, o que nos obrigou a utilizar uma ponte AXI, cuja função é "traduzir" para o que o CoProcessador entende. O CoProcessador não entende, por exemplo, o ldr ou str do Assembly, apenas os sinais 1 ou 0.
+   - Traduz as funções do Processador para os sinais elétricos que o CoProcessador consegue entender.
 # Metodologia
 Entradas: O CoProcessador deve receber as entradas do seu sistema, essas sendo o arquivo da imagem, o arquivo de pesos e o arquivo dos viéses, além dos bits da instrução, já que o CoProcessador só vai carregar, calcular ou enviar, após receber a instrução de 32bits relacionada.
 
