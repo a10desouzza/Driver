@@ -1,10 +1,10 @@
-# 📖 Documentação da API: Driver Kernel/User-Space ELM (ARMv8 Assembly)
+# Documentação da API
 
 Esta documentação descreve a API de software em C para o driver desenvolvido em **ARMv8 Assembly**. O driver realiza o mapeamento de memória direta via **MMIO** utilizando a ponte Lightweight HPS-to-FPGA da placa Altera Cyclone V (De1-SoC), permitindo o carregamento de dados e a execução de inferências em lote no CoProcessador de Redes Neurais (ELM).
 
 ---
 
-## 🛠️ Visão Geral dos Registradores de Hardware (Mapeamento MMIO)
+## Visão Geral dos Registradores de Hardware
 
 A tabela abaixo descreve os registradores mapeados fisicamente a partir do endereço base da ponte `0xFF200000`.
 
@@ -21,7 +21,7 @@ A tabela abaixo descreve os registradores mapeados fisicamente a partir do ender
 
 ---
 
-## 💻 Definições de Constantes e Códigos de Erro (`elm_driver.h`)
+## Definições de Constantes e Códigos de Erro
 
 ```c
 #define ELM_OK               0
