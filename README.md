@@ -76,24 +76,49 @@ A correção foi adicionar rev16 em todos os loops de leitura de parâmetros:
 ldrh  r0, [r3, r0]   @ lê 2 bytes do buffer
 rev16 r0, r0         @ corrige a ordem dos bytes
 ```
-4. Banco de Registradores
+4. Fluxo de dados
 
-   Banco de Registradores que organizamos para a resolução do problema:
+   ```text
+                  FLUXO DE LEITURA E ENVIO DE DADOS (MMIO)
+                  
+ [ SISTEMA DE ARQUIVOS ]         [ ESPAÇO DE MEMÓRIA ]         [ HARDWARE / FPGA ]
+    Arquivos Binários                Buffers na RAM                Coprocessador
+    
+  ┌───────────────────┐          ┌───────────────────┐         ┌───────────────────┐
+  │   pesos_q.bin     │ ───────> │  buf_w (200KB)    │ ──────> │ Memory AXI Bridge │
+  │   (100352 valores)│  (read)  │  Corrige Endian   │ (MMIO)  │ REG_DATA_IN (0x20)│
+  └───────────────────┘          └───────────────────┘         └─────────┬─────────┘
+  ┌───────────────────┐          ┌───────────────────┐                   │
+  │   beta_q.bin      │ ───────> │  buf_bt (2.5KB)   │ ──────────────────┤
+  │   (1280 valores)  │  (read)  │  Corrige Endian   │ (MMIO)            │
+  └───────────────────┘          └───────────────────┘                   │
+  ┌───────────────────┐          ┌───────────────────┐                   │
+  │   bias_q.bin      │ ───────> │  buf_bs (256B)    │ ──────────────────┤
+  │   (128 valores)   │  (read)  │  Corrige Endian   │ (MMIO)            │ (Opcode + Dados)
+  └───────────────────┘          └───────────────────┘                   │
+  ┌───────────────────┐          ┌───────────────────┐                   │
+  │   imagem.bin      │ ───────> │  buf_img (784B)   │ ──────────────────┘
+  │   (784 pixels)    │  (read)  │  (Pixel 8-bits)   │ (MMIO)
+  └───────────────────┘          └───────────────────┘
+                                                                         │
+                                 ┌───────────────────┐                   ▼
+                                 │   REG_SIGNALS     │ ── Pulsos ──> [ CLOCK / FSM ]
+                                 │      (0x10)       │   (Sincronismo de Escrita)
+                                 └───────────────────┘
+                                 
+────────────────────────────────────────────────────────────────────────────────────
+                                 FASE DE INFERÊNCIA
+                                 
+                                 ┌───────────────────┐ ◄─ Polling ── ┌───────────────────┐
+                                 │  REG_DATA_OUT     │   (Bit 4)     │   Máquina de      │
+                                 │      (0x00)       │ ◄─ Resultado ─│ Estados da FPGA   │
+                                 └─────────┬─────────┘    (Bits 0-3) └───────────────────┘
+                                           │
+                                           ▼
+                                 [ TERMINAL DO LINUX ]
+                                   "Digito Predito: 5"
 
-| Offset | Registrador | Acesso | Bits | Descrição |
-|---|---|---|---|---|
-| 0x00 | REG_INSTRUCTION | W | [2:0] | Seletor da operação/memória de destino (Ex: 000 = IMG, 011 = BIAS). |
-| 0x00 | REG_INSTRUCTION | W | [31:3] | Contém o Endereço e o Dado a ser gravado (formato varia conforme o OPCODE). |
-| 0x04 | REG_CONTROL | W | [0] | Escreva 1 para disparar o cálculo (inferência) da Rede Neural. |
-| 0x04 | REG_CONTROL | W | [1] | Escreva 1 para limpar a flag de erro de limite de memória. |
-| 0x04 | REG_CONTROL | W | [2] | Escreva 1 para reiniciar/zerar a máquina de estados do coprocessador. |
-| 0x04 | REG_CONTROL | W | [31:3] | Bits não utilizados pelo controle. Recomenda-se escrever 0. |
-| 0x08 | REG_STATUS | R | [3:0] | Retorna o dígito (0 a 9) classificado pela IA. Válido apenas quando DONE = 1. |
-| 0x08 | REG_STATUS | R | [4] | Flag de conclusão: 1 significa que a IA terminou de processar a imagem. |
-| 0x08 | REG_STATUS | R | [5] | Flag de ocupado: 1 significa que o hardware está gravando dados. Não envie nova instrução. |
-| 0x08 | REG_STATUS | R | [6] | Flag de erro: 1 significa tentativa de gravação fora do limite físico de memória. |
-| 0x08 | REG_STATUS | R | [31:7] | Bits não utilizados. O hardware retornará 0. |
-
+								   
 # Testes e Resultados
 1. Testbench
 Antes de carregar qualquer parâmetro, o main chama iniciar_inferencia() de propósito, para ver se a FPGA bloqueia o comando. Depois lê o status com imprimir_status(), que decodifica o registrador de hardware e imprime flags legíveis como [BUSY] ou [ERRO]
