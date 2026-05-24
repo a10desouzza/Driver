@@ -100,15 +100,7 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
 			int ler_status_fpga(void);
 			Leitura direta e não-bloqueante do registrador bruto de status e diagnóstico da FPGA.
      
-5. Como executar
-```bash
-sudo su
-gcc main.c driver.s -o elm -I. -no-pie
-./elm
-```
-O sudo su é necessário pois, como descrito anteriormente, o Driver tem acesso ao diretório do arquivo, então ele precisa de acesso root para abrir o /dev/mem — sem isso ele falha logo na primeira chamada. O -no-pie desativa o PIE (Position Independent Executable) para que o linker misture o main.c com o driver.s sem conflito.
-
-5. Erros encontrados no desenvolvimento
+4. Erros encontrados no desenvolvimento
 
 O primeiro problema foi na função mapear_fpga: estávamos passando um endereço físico errado para o mmap2. O resultado foi que todas as escritas nos registradores da FPGA iam para uma região inválida do barramento e simplesmente não chegavam ao hardware.
 
@@ -120,7 +112,18 @@ A correção foi adicionar rev16 em todos os loops de leitura de parâmetros:
 ldrh  r0, [r3, r0]   @ lê 2 bytes do buffer
 rev16 r0, r0         @ corrige a ordem dos bytes
 ```
-								   
+# Manual de uso
+- Faça o Download de todo o conteúdo das pastas data, src e utils;
+- Modifique o diretório no arquivo 
+- Como executar
+```bash
+sudo su
+gcc main.c driver.s -o elm -I. -no-pie
+./elm
+```
+O sudo su é necessário pois, como descrito anteriormente, o Driver tem acesso ao diretório do arquivo, então ele precisa de acesso root para abrir o /dev/mem — sem isso ele falha logo na primeira chamada. O -no-pie desativa o PIE (Position Independent Executable) para que o linker misture o main.c com o driver.s sem conflito.
+
+
 # Testes e Resultados
 1. Testbench
 Antes de carregar qualquer parâmetro, o main chama iniciar_inferencia() de propósito, para ver se a FPGA bloqueia o comando. Depois lê o status com imprimir_status(), que decodifica o registrador de hardware e imprime flags legíveis como [BUSY] ou [ERRO]
