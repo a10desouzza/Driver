@@ -169,7 +169,6 @@ int carregar_beta(const char *path);
 r2 ← 2560      ; 1280 valores × 2 bytes
 r11 ← 1280     ; limite do loop
 bl fmt_bt  →  r2   ; monta instrução STORE_BETA (opcode 100)
-               ; 1 send_cmd por valor (sem instrução de endereço separada)
 ```
 
 ---
@@ -310,7 +309,7 @@ Use as constantes do `elm_driver.h` para decodificar o retorno:
 
 ### 5.1 `send_cmd`
 
-Envia uma instrução de 32 bits à FPGA via protocolo de handshake. Chamada por todas as rotinas de carga de dados.
+Envia uma instrução de 32 bits à FPGA. Chamada por todas as rotinas de carga de dados.
 
 | Campo | Valor |
 |---|---|
@@ -328,7 +327,7 @@ r3 ← [r9, #0x00]          ; dummy read 1 — absorve latência do barramento A
 r3 ← [r9, #0x00]          ; dummy read 2 — estado do status garantido estável
 ```
 
-> As duas leituras consecutivas de DATA_OUT não são redundância. O barramento AXI tem latência de propagação após o pulso de strobe. A primeira leitura ocorre durante essa janela e pode retornar o estado antigo. A segunda garante que o status já foi atualizado pela FPGA.
+> As duas leituras consecutivas de DATA_OUT não são redundância. O barramento AXI tem latência de propagação após o pulso. A primeira leitura ocorre durante essa janela e pode retornar o estado antigo. A segunda garante que o status já foi atualizado pela FPGA.
 
 ---
 
