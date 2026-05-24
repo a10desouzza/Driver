@@ -24,15 +24,38 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
      Já que já tinhamos os arquivos, e os bits de cada instrução já estavam definidos, nós precisávamos definir como o Driver iria ler esses dados. O caminho que escolhemos, foi usar o comando svc (systemcall), para direcionar o driver ao diretório onde os arquivos estavam, para que os registradores que definimos pudessem receber os dados.
      Para testar, enviamos os arquivos e pedimos uma saída que possuia relação com eles, por exemplo, os 16 primeiros bits do arquivo.
      
+    ```bash 
+    mov  r4, r0         ← salva o fd aberto
+	ldr  r1, =buf_w     ← endereço do buffer na RAM do HPS (destino)
+	mov  r2, #200704    ← quantos bytes ler
+	mov  r7, #3         ← syscall read()
+	svc  0              ← kernel lê o arquivo e despeja direto no buffer
+    ```
+    
     - Envio dos dados
       Como foi dito, não existe um meio direto do Driver falar com o CoProcessador, já que um não tem acesso ao outro, então foi necessário o uso dos endereços da HPS, que ambos possuem acesso, para que essa comunicação ocorra. O Driver lê os arquivos em seus diretórios e os registradores escrevem os dados em um buffer, através de um loop, já que não era possível escrever todos os dados em somente um ciclo, ou em uma instrução. Esse buffer possui tamanho definido no código a partir do arquivo que ele vai receber, e já é uma parte (endereço) da memória dessa HPS, então quando os arquivos terminam de ser escritos, a parte do Driver já vai ter sido feita.
       
+    ```bash
+    lsl  r0, r10, #1       ← índice × 2 (cada valor ocupa 2 bytes)
+	ldr  r3, =buf_w        ← endereço base do buffer
+	ldrh r0, [r3, r0]      ← lê 2 bytes do buffer (um valor de 16 bits)
+	rev16 r0, r0           ← corrige endianness antes de enviar
+    ```
+    
     - Como o CoProcessador lê
       A HPS redireciona os dados desse endereço, definido por nós como saída do Driver e entrada do CoProcessador, para a porta LW do mesmo, onde os registradores vão direcionar os dados para cada módulo, dependendo do valor dos 32 bits da instrução, para que cada um faça seu papel na resolução. A Porta LW é feita para receber esses dados, então apartir desse ponto arquitetura do CoProcessador começa a trabalhar, devolvendo a predição da imagem (saída), após receber todas as instruções e dados.
       
     - Leitura do Resultado
       Os Registradores do CoProcessador direcionam o resultado da inferência (saída do sistema), para outro endereço da HPS, esse que foi definido para essa função. Criamos a função de leitura da predição, onde os registradores vão que vai ler aquilo que for escrito nesse endereço, e retornar esse valor para o usuário no terminal.
-
+      
+   ```bash
+   poll_done:
+    ldr  r0, [r9, #0x00]   ← lê o registrador de status da FPGA
+    tst  r0, #0x10         ← testa o bit 4 (flag "done")
+    beq  poll_done         ← se não terminou, continua lendo
+    and  r0, r0, #0xF      ← isola os 4 bits com o dígito predito (0–9)
+	```
+   
 2. Como executar
 ```bash
 sudo su
