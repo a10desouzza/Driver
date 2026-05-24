@@ -90,46 +90,7 @@ rev16 r0, r0         @ corrige a ordem dos bytes
 ```
 4. Fluxo de dados
 
-   ```text
-                  FLUXO DE LEITURA E ENVIO DE DADOS (MMIO)
-                  
- [ SISTEMA DE ARQUIVOS ]         [ ESPAÇO DE MEMÓRIA ]         [ HARDWARE / FPGA ]
-    Arquivos Binários                Buffers na RAM                Coprocessador
-    
-  ┌───────────────────┐          ┌───────────────────┐         ┌───────────────────┐
-  │   pesos_q.bin     │ ───────> │  buf_w (200KB)    │ ──────> │ Memory AXI Bridge │
-  │   (100352 valores)│  (read)  │  Corrige Endian   │ (MMIO)  │ REG_DATA_IN (0x20)│
-  └───────────────────┘          └───────────────────┘         └─────────┬─────────┘
-  ┌───────────────────┐          ┌───────────────────┐                   │
-  │   beta_q.bin      │ ───────> │  buf_bt (2.5KB)   │ ──────────────────┤
-  │   (1280 valores)  │  (read)  │  Corrige Endian   │ (MMIO)            │
-  └───────────────────┘          └───────────────────┘                   │
-  ┌───────────────────┐          ┌───────────────────┐                   │
-  │   bias_q.bin      │ ───────> │  buf_bs (256B)    │ ──────────────────┤
-  │   (128 valores)   │  (read)  │  Corrige Endian   │ (MMIO)            │ (Opcode + Dados)
-  └───────────────────┘          └───────────────────┘                   │
-  ┌───────────────────┐          ┌───────────────────┐                   │
-  │   imagem.bin      │ ───────> │  buf_img (784B)   │ ──────────────────┘
-  │   (784 pixels)    │  (read)  │  (Pixel 8-bits)   │ (MMIO)
-  └───────────────────┘          └───────────────────┘
-                                                                         │
-                                 ┌───────────────────┐                   ▼
-                                 │   REG_SIGNALS     │ ── Pulsos ──> [ CLOCK / FSM ]
-                                 │      (0x10)       │   (Sincronismo de Escrita)
-                                 └───────────────────┘
-                                 
-────────────────────────────────────────────────────────────────────────────────────
-                                 FASE DE INFERÊNCIA
-                                 
-                                 ┌───────────────────┐ ◄─ Polling ── ┌───────────────────┐
-                                 │  REG_DATA_OUT     │   (Bit 4)     │   Máquina de      │
-                                 │      (0x00)       │ ◄─ Resultado ─│ Estados da FPGA   │
-                                 └─────────┬─────────┘    (Bits 0-3) └───────────────────┘
-                                           │
-                                           ▼
-                                 [ TERMINAL DO LINUX ]
-                                   "Digito Predito: 5"
-
+![Diagrama de Envio dos Dados](main/Fluxo-dados.png)
 								   
 # Testes e Resultados
 1. Testbench
