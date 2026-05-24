@@ -21,11 +21,11 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
 
 1. A Comunicação
    - Leitura dos arquivos
-     Já que já tinhamos os arquivos, e os bits de cada instrução já estavam definidos, nós precisávamos definir como o Driver iria ler esses dados. O caminho que escolhemos, foi usar o comando svc (systemcall), para direcionar o driver ao diretório onde os arquivos estavam, para que esse pudesse interpretar os valores.
+     Já que já tinhamos os arquivos, e os bits de cada instrução já estavam definidos, nós precisávamos definir como o Driver iria ler esses dados. O caminho que escolhemos, foi usar o comando svc (systemcall), para direcionar o driver ao diretório onde os arquivos estavam, para que os registradores que definimos pudessem receber os dados.
      Para testar, enviamos os arquivos e pedimos uma saída que possuia relação com eles, por exemplo, os 16 primeiros bits do arquivo.
      
     - Envio dos dados
-      Como foi dito, não existe um meio direto do Driver falar com o CoProcessador, já que um não tem acesso ao outro, então foi necessário o uso dos endereços da HPS, que ambos possuem acesso, para que essa comunicação ocorra. O Driver lê os arquivos em seus diretórios e escreve os dados em um buffer, de tamanho definido para cada arquivo. Esse buffer já é uma parte (endereço) da memória dessa HPS, então quando o driver escreve os dados nele, sua parte já foi feita.
+      Como foi dito, não existe um meio direto do Driver falar com o CoProcessador, já que um não tem acesso ao outro, então foi necessário o uso dos endereços da HPS, que ambos possuem acesso, para que essa comunicação ocorra. O Driver lê os arquivos em seus diretórios e os registradores escrevem os dados em um buffer, através de um loop, já que não era possível escrever todos os dados em somente um ciclo, ou em uma instrução. Esse buffer possui tamanho definido no código a partir do arquivo que ele vai receber, e já é uma parte (endereço) da memória dessa HPS, então quando os arquivos terminam de ser escritos, a parte do Driver já vai ter sido feita.
       
     - Como o CoProcessador lê
       A HPS redireciona os dados desse endereço, definido por nós como saída do Driver e entrada do CoProcessador, para a porta LW do mesmo, onde os registradores vão direcionar os dados para cada módulo, dependendo do valor dos 32 bits da instrução, para que cada um faça seu papel na resolução. A Porta LW é feita para receber esses dados, então apartir desse ponto arquitetura do CoProcessador começa a trabalhar, devolvendo a predição da imagem (saída), após receber todas as instruções e dados.
