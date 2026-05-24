@@ -77,7 +77,9 @@ ldrh  r0, [r3, r0]   @ lê 2 bytes do buffer
 rev16 r0, r0         @ corrige a ordem dos bytes
 ```
 4. Banco de Registradores
-   
+
+   Banco de Registradores que organizamos para a resolução do problema:
+
 | Offset | Registrador | Acesso | Bits | Descrição |
 |---|---|---|---|---|
 | 0x00 | REG_INSTRUCTION | W | [2:0] | Seletor da operação/memória de destino (Ex: 000 = IMG, 011 = BIAS). |
