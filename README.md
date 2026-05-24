@@ -49,7 +49,7 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
 	ldrh r0, [r3, r0]      ← lê 2 bytes do buffer (um valor de 16 bits)
 	rev16 r0, r0           ← corrige endianness antes de enviar
     ```
-	![DiagramaDados](Fluxo-dados.png)
+	![DiagramaDados](utils/Fluxo-dados.png)
     
     - Como o CoProcessador lê
       
@@ -69,7 +69,7 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
     and  r0, r0, #0xF      ← isola os 4 bits com o dígito predito (0–9)
 	```
    - Conexão HPS-AXI-FPGA
-     ![DiagramaHPS](HPS.png)
+     ![DiagramaHPS](utils/HPS.png)
 
 3. Registradores
    - Tendo como base o banco de registradores descrito na Documentação, criamos um arquivo .h (Header) cuja função é definir os registradores para a camada de implementação (arquivo .c):
