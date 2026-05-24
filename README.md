@@ -49,6 +49,7 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
 	ldrh r0, [r3, r0]      ← lê 2 bytes do buffer (um valor de 16 bits)
 	rev16 r0, r0           ← corrige endianness antes de enviar
     ```
+	![DiagramaDados](Fluxo-dados.png)
     
     - Como o CoProcessador lê
       
@@ -67,8 +68,9 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
     beq  poll_done         ← se não terminou, continua lendo
     and  r0, r0, #0xF      ← isola os 4 bits com o dígito predito (0–9)
 	```
-   
-2. Como executar
+   - Conexão HPS-AXI-FPGA
+     ![DiagramaHPS](HPS.png)
+1. Como executar
 ```bash
 sudo su
 gcc main.c driver.s -o elm -I. -no-pie
@@ -88,9 +90,6 @@ A correção foi adicionar rev16 em todos os loops de leitura de parâmetros:
 ldrh  r0, [r3, r0]   @ lê 2 bytes do buffer
 rev16 r0, r0         @ corrige a ordem dos bytes
 ```
-4. Fluxo de dados
-
-![Diagrama de Envio dos Dados](Fluxo-dados.png)
 								   
 # Testes e Resultados
 1. Testbench
