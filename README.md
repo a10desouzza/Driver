@@ -70,7 +70,38 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
 	```
    - Conexão HPS-AXI-FPGA
      ![DiagramaHPS](HPS.png)
-1. Como executar
+
+3. Registradores
+   - Tendo como base o banco de registradores descrito na Documentação, criamos um arquivo .h (Header) cuja função é definir os registradores para a camada de implementação (arquivo .c):
+     
+			int mapear_fpga(void);
+			Efetua a abertura de /dev/mem e mapeia uma página física (4KB) usando a chamada de sistema mmap2. Retorna 0 em 				caso de sucesso.
+
+			int reiniciar_fpga(void);
+			Aplica um pulso lógico de RESET síncrono para reinicializar a máquina de estados interna da FPGA.
+
+			int carregar_pesos(const char *caminho);
+			Carrega os 100.352 pesos em precisão fixa de 16 bits para a memória da FPGA, segmentando em instruções de 					endereço (Opcode 1) e valor (Opcode 2).
+
+			int carregar_beta(const char *caminho);
+			Transfere os 1.280 coeficientes beta combinados em palavras de instrução de 32 bits (Opcode 4).
+
+			int carregar_bias(const char *caminho);
+			Transfere os 128 valores de bias utilizando o Opcode 3.
+
+			int carregar_imagem(const char *caminho);
+			Transfere os 784 pixels de uma imagem digitalizada de entrada utilizando o Opcode 0.
+
+			int iniciar_inferencia(void);
+			Dispara o cálculo enviando o sinal operacional de START (Opcode 5).
+
+			int obter_resultado(void);
+			Rotina bloqueante baseada em Polling ativo. Interroga o registrador 0x00 até que a flag DONE (bit 4) seja 					levantada, isolando e retornando o dígito classificado nos bits [3:0].
+
+			int ler_status_fpga(void);
+			Leitura direta e não-bloqueante do registrador bruto de status e diagnóstico da FPGA.
+     
+5. Como executar
 ```bash
 sudo su
 gcc main.c driver.s -o elm -I. -no-pie
@@ -78,7 +109,7 @@ gcc main.c driver.s -o elm -I. -no-pie
 ```
 O sudo su é necessário pois, como descrito anteriormente, o Driver tem acesso ao diretório do arquivo, então ele precisa de acesso root para abrir o /dev/mem — sem isso ele falha logo na primeira chamada. O -no-pie desativa o PIE (Position Independent Executable) para que o linker misture o main.c com o driver.s sem conflito.
 
-3. Erros encontrados no desenvolvimento
+5. Erros encontrados no desenvolvimento
 
 O primeiro problema foi na função mapear_fpga: estávamos passando um endereço físico errado para o mmap2. O resultado foi que todas as escritas nos registradores da FPGA iam para uma região inválida do barramento e simplesmente não chegavam ao hardware.
 
