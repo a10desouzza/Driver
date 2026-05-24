@@ -49,7 +49,7 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
 	ldrh r0, [r3, r0]      ← lê 2 bytes do buffer (um valor de 16 bits)
 	rev16 r0, r0           ← corrige endianness antes de enviar
     ```
-	![DiagramaDados](utils/Fluxo-dados.png)
+	![DiagramaDados](utils/Fluxo.png)
     
     - Como o CoProcessador lê
       
