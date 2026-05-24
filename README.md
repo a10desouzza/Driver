@@ -17,15 +17,31 @@ Entradas: O CoProcessador deve receber as entradas do seu sistema, essas sendo o
 
 Saídas: O CoProcessador retorna, além de seu estado, o resultado da predição, encontrado após a inferência.
 
+Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados dos arquivos de imagens, pesos e viéses, e direcioná-los ao CoProcessador, mesmo sem ter acesso ao que acontece dentro do mesmo. Para isso, nosso primeiro problema foi entender como que o CoProcessador poderia receber esses dados, sendo que não tinhamos acesso ao seu conteúdo.
 
-1. Como executar
+1. A Comunicação
+   - Leitura dos arquivos
+     Já que já tinhamos os arquivos, e os bits de cada instrução já estavam definidos, nós precisávamos definir como o Driver iria ler esses dados. O caminho que escolhemos, foi usar o comando svc (systemcall), para direcionar o driver ao diretório onde os arquivos estavam, para que esse pudesse interpretar os valores.
+     Para testar, enviamos os arquivos e pedimos uma saída que possuia relação com eles, por exemplo, os 16 primeiros bits do arquivo.
+     
+    - Envio dos dados
+      Como foi dito, não existe um meio direto do Driver falar com o CoProcessador, já que um não tem acesso ao outro, então foi necessário o uso dos endereços da HPS, que ambos possuem acesso, para que essa comunicação ocorra. O Driver lê os arquivos em seus diretórios e escreve os dados em um buffer, de tamanho definido para cada arquivo. Esse buffer já é uma parte (endereço) da memória dessa HPS, então quando o driver escreve os dados nele, sua parte já foi feita.
+      
+    - Como o CoProcessador lê
+      A HPS redireciona os dados desse endereço, definido por nós como saída do Driver e entrada do CoProcessador, para a porta LW do mesmo, onde os registradores vão direcionar os dados para cada módulo, dependendo do valor dos 32 bits da instrução, para que cada um faça seu papel na resolução. A Porta LW é feita para receber esses dados, então apartir desse ponto arquitetura do CoProcessador começa a trabalhar, devolvendo a predição da imagem (saída), após receber todas as instruções e dados.
+      
+    - Leitura do Resultado
+      Os Registradores do CoProcessador direcionam o resultado da inferência (saída do sistema), para outro endereço da HPS, esse que foi definido para essa função. Criamos a função de leitura da predição, onde os registradores vão que vai ler aquilo que for escrito nesse endereço, e retornar esse valor para o usuário no terminal.
+
+2. Como executar
 ```bash
 sudo su
 gcc main.c driver.s -o elm -I. -no-pie
 ./elm
 ```
 O sudo su é necessário porque o driver precisa de acesso root para abrir /dev/mem — sem isso ele falha logo na primeira chamada. O -no-pie desativa o PIE (Position Independent Executable) para que o linker aceite misturar o main.c com o driver.s sem conflito de relocações.
-2. Erros encontrados no desenvolvimento
+
+3. Erros encontrados no desenvolvimento
 
 O primeiro problema foi na função mapear_fpga: estávamos passando um endereço físico errado para o mmap2. O resultado foi que todas as escritas nos registradores da FPGA iam para uma região inválida do barramento e simplesmente não chegavam ao hardware.
 
