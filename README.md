@@ -76,7 +76,22 @@ A correção foi adicionar rev16 em todos os loops de leitura de parâmetros:
 ldrh  r0, [r3, r0]   @ lê 2 bytes do buffer
 rev16 r0, r0         @ corrige a ordem dos bytes
 ```
-
+4. Banco de Registradores
+   Montamos um banco de registradores para todas as funções que o driver precisa:
+   
+   | Offset (Hex) | Nome do Registrador | Acesso | Bits | Descrição Técnica e Uso no Driver |
+| :--- | :--- | :---: | :---: | :--- |
+| **0x00** | `REG_INSTRUCTION` | Escrita (W) | `[2:0]` | Seletor da operação/memória de destino (Ex: 000 = IMG, 011 = BIAS). |
+| **0x00** | `REG_INSTRUCTION` | Escrita (W) | `[31:3]` | Contém o Endereço e o Dado a ser gravado (formato varia conforme o OPCODE). |
+| **0x04** | `REG_CONTROL` | Escrita (W) | `[0]` | Escreva 1 para disparar o cálculo (inferência) da Rede Neural. |
+| **0x04** | `REG_CONTROL` | Escrita (W) | `[1]` | Escreva 1 para limpar a flag de erro de limite de memória. |
+| **0x04** | `REG_CONTROL` | Escrita (W) | `[2]` | Escreva 1 para reiniciar/zerar a máquina de estados do coprocessador. |
+| **0x04** | `REG_CONTROL` | Escrita (W) | `[31:3]` | Bits não utilizados pelo controle. Recomenda-se escrever 0. |
+| **0x08** | `REG_STATUS` | Leitura (R) | `[3:0]` | Retorna o dígito (0 a 9) classificado pela IA. Válido apenas quando DONE = 1. |
+| **0x08** | `REG_STATUS` | Leitura (R) | `[4]` | Flag de conclusão: 1 significa que a IA terminou de processar a imagem. |
+| **0x08** | `REG_STATUS` | Leitura (R) | `[5]` | Flag de ocupado: 1 significa que o hardware está gravando dados. Não envie nova instrução. |
+| **0x08** | `REG_STATUS` | Leitura (R) | `[6]` | Flag de erro: 1 significa tentativa de gravação fora do limite físico de memória. |
+| **0x08** | `REG_STATUS` | Leitura (R) | `[31:7]` | Bits não utilizados. O hardware retornará 0. |
 # Testes e Resultados
 1. Testbench
 Antes de carregar qualquer parâmetro, o main chama iniciar_inferencia() de propósito, para ver se a FPGA bloqueia o comando. Depois lê o status com imprimir_status(), que decodifica o registrador de hardware e imprime flags legíveis como [BUSY] ou [ERRO]
