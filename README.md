@@ -39,7 +39,7 @@ sudo su
 gcc main.c driver.s -o elm -I. -no-pie
 ./elm
 ```
-O sudo su é necessário porque o driver precisa de acesso root para abrir /dev/mem — sem isso ele falha logo na primeira chamada. O -no-pie desativa o PIE (Position Independent Executable) para que o linker aceite misturar o main.c com o driver.s sem conflito de relocações.
+O sudo su é necessário pois, como descrito anteriormente, o Driver tem acesso ao diretório do arquivo, então ele precisa de acesso root para abrir o /dev/mem — sem isso ele falha logo na primeira chamada. O -no-pie desativa o PIE (Position Independent Executable) para que o linker misture o main.c com o driver.s sem conflito.
 
 3. Erros encontrados no desenvolvimento
 
