@@ -19,7 +19,6 @@ O programa consiste em um arquivo .s (Código em Assembly), um arquivo .h (Arqui
 Entradas: O CoProcessador deve receber as entradas do seu sistema, essas sendo o arquivo da imagem, o arquivo de pesos e o arquivo dos viéses, além dos bits da instrução, já que o CoProcessador só vai carregar, calcular ou enviar, após receber a instrução de 32bits relacionada.
 
 Saídas: O CoProcessador retorna, além de seu estado, o resultado da predição, encontrado após a inferência.
-
 Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados dos arquivos de imagens, pesos e viéses, e direcioná-los ao CoProcessador, mesmo sem ter acesso ao que acontece dentro do mesmo. Para isso, nosso primeiro problema foi entender como que o CoProcessador poderia receber esses dados, sendo que não tinhamos acesso ao seu conteúdo.
 
 1. A Comunicação
