@@ -192,7 +192,9 @@ O Driver possui uma ligação funcional e estável com o CoProcessador, fornecen
 Entretanto, de forma geral, acreditamos que conseguimos alcançar o objetivo final, de maneira aceitável.
 
 # Referências
-- HARRIS, David M.; HARRIS, Sarah L. Digital Design and Computer Architecture. 2. ed. Waltham: Morgan Kaufmann, 2012.
-- Canal Low Level Learning — vídeos sobre Assembly x86/ARM, syscalls Linux e drivers de baixo nível
-- ARM LIMITED. ARM Architecture Reference Manual ARMv7-A and ARMv7-R edition. ARM Developer, 2018. Disponível em: https://developer.arm.com/documentation/ddi0406/latest
-- TERASIC TECHNOLOGIES. DE1-SoC User Manual. Terasic, 2014. Disponível em: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=836
+- HARRIS, David M.; HARRIS, Sarah L. Digital Design and Computer Architecture. 2. ed. Waltham: Morgan Kaufmann, 2012.;
+- Canal Low Level Learning — vídeos sobre Assembly x86/ARM, syscalls Linux e drivers de baixo nível;
+- ARM LIMITED. ARM Architecture Reference Manual ARMv7-A and ARMv7-R edition. ARM Developer, 2018. Disponível em: https://developer.arm.com/documentation/ddi0406/latest;
+- TERASIC TECHNOLOGIES. DE1-SoC User Manual. Terasic, 2014. Disponível em: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=836;
+- Imagem "Fluxo.png" feita no Canva por Lucas Dourado;
+- Imagem "HPS.png" feita através do Mermaid AI;
