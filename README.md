@@ -8,17 +8,18 @@ O CoProcessador tem a função definida de receber uma imagem de um número, den
 O programa consiste em um arquivo .s (Código em Assembly), um arquivo .h (Arquivo de definição dos registradores) e um .c (Importação do programa e visualização das saídas).
 # Fundamentação Teórica
 1. MMIO
-   - Para a construção do driver, foram utilizados registradores acessados através da leitura da memória do coprocessador, o que configura o uso do MMIO.
+   - A Memory-Mapped I/O (MMIO), ou Entrada/Saída Mapeada em Memória, é um método fundamental de comunicação entre o processador (CPU) e os dispositivos periféricos (como placas de vídeo, placas de rede e controladores de armazenamento) em uma arquitetura de computadores.
+   - Em termos teóricos, o MMIO unifica o espaço de endereçamento do sistema, fazendo com que o acesso ao hardware seja tratado exatamente da mesma forma que o acesso à memória RAM.
      
 2. HPS Altera
-   - Na Placa De1-SoC é possivel utilizar-se da HPS Altera, uma ponte de conexão entre o ARMv7 e os circuitos funcionando na FPGA.
-   - Seu uso se dá através de canais de memória, com endereços definidos, que podem ser acessados para leitura ou escrita de dados, por ambos os lados integrados, mesmo que nenhum tenha acesso definitivo ao outro. O Driver escreve em certos endereços, as entradas do coprocessador, e em outros, realiza a leitura de sua saída.
+   - A Hard Processor System (HPS) é uma contraparte teórica e arquitetural fundamental no universo dos sistemas digitais modernos, especialmente no contexto de chips híbridos conhecidos como SoCs FPGAs (como as famílias Cyclone V SoC, Arria 10 SoC da Intel/Altera, ou os equivalentes Zynq da AMD/Xilinx, onde o conceito é análogo).
+   - Em termos teóricos, o HPS representa a fusão de dois paradigmas de computação historicamente distintos no mesmo substrato de silício: a computação baseada em software (execução sequencial) e a computação baseada em hardware (execução paralela).
      
 3. AXI Bridge
-   - Embora a HPS consiga conectar os dois sistemas, eles utilizam uma arquitetura de dados diferente, principalmente partindo do ARMv7 para a FPGA, o que nos obrigou a utilizar uma ponte AXI, cuja função é "traduzir" para o que o CoProcessador entende. O CoProcessador não entende, por exemplo, o ldr ou str do Assembly, apenas os sinais 1 ou 0.
-   - Traduz as funções do Processador para os sinais elétricos que o CoProcessador consegue entender.
+   - A AXI Bridge (Ponte AXI) é o elemento arquitetural e teórico que viabiliza a existência de sistemas híbridos, como os SoCs FPGAs. Ela atua como um tradutor e um canal de comunicação de alta velocidade que interconecta o mundo do hardware fixo (o HPS ou processador dedicado) ao mundo da lógica programável (a FPGA).
+   - Sem essa ponte, o processador e a FPGA seriam dois componentes isolados dividindo o mesmo silício; com ela, eles passam a operar como um sistema unificado.
      
-4. Endianess
+5. Endianess
    - Endianness é o conceito que define a ordem em que os bytes de um dado numérico composto por múltiplos bytes são organizados e armazenados na memória de um computador ou transmitidos através de uma rede. Quando lidamos com dados maiores que um byte, como números inteiros de 16, 32 ou 64 bits, a arquitetura do processador precisa seguir uma regra fixa para saber qual byte vem primeiro.
      
    - No sistema Big-Endian, o byte mais significativo, que é aquele que carrega o maior valor numérico (como as centenas ou milhares em nossa escrita manual), é guardado no menor endereço de memória. Funciona exatamente como a escrita humana ocidental, onde lemos e escrevemos os números da esquerda para a direita, começando pelo algarismo de maior valor.
