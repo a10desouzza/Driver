@@ -189,3 +189,9 @@ O dígito 5 foi o que gerou mais erros (6/10), o coprocessador identificou ele c
 O Driver possui uma ligação funcional e estável com o CoProcessador, fornecendo tudo que é necessário para que esse realize sua função. A Taxa de 83% de acerto e o jeito em que o Driver funciona são resultado de uma estrutura estável de projeto, porém existe um erro de planejamento, que gera a necessidade de uma atualização para uso futuro: Nosso driver tem acesso ao disco rígido do computador, através do svc (systemcall), algo que um driver não deveria fazer, embora tenha sido a maneira que encontramos de resolver o problema, entendemos hoje que isso deve ser mudado.
 
 Entretanto, de forma geral, acreditamos que conseguimos alcançar o objetivo final, de maneira aceitável.
+
+# Referências
+- HARRIS, David M.; HARRIS, Sarah L. Digital Design and Computer Architecture. 2. ed. Waltham: Morgan Kaufmann, 2012.
+- Canal Low Level Learning — vídeos sobre Assembly x86/ARM, syscalls Linux e drivers de baixo nível
+- ARM LIMITED. ARM Architecture Reference Manual ARMv7-A and ARMv7-R edition. ARM Developer, 2018. Disponível em: https://developer.arm.com/documentation/ddi0406/latest
+- TERASIC TECHNOLOGIES. DE1-SoC User Manual. Terasic, 2014. Disponível em: https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=836
