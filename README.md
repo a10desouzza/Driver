@@ -81,7 +81,7 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
    - Conexão HPS-AXI-FPGA
      ![DiagramaHPS](utils/HPS.png)
 
-3. Registradores
+2. Registradores
    - Tendo como base o banco de registradores descrito na Documentação, criamos um arquivo .h (Header) cuja função é definir os registradores para a camada de implementação (arquivo .c):
      
 			int mapear_fpga(void);
@@ -111,28 +111,29 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
 			int ler_status_fpga(void);
 			Leitura direta e não-bloqueante do registrador bruto de status e diagnóstico da FPGA.
      
-4. Erros encontrados no desenvolvimento
+3. Erros encontrados no desenvolvimento
    - O primeiro problema foi na função mapear_fpga: estávamos passando um endereço físico errado para o mmap2. O resultado foi que todas as escritas nos registradores da FPGA iam para uma região inválida do barramento e simplesmente não chegavam ao hardware.
    - O segundo problema foi a Endianness trocada nos arquivos .bin dos parâmetros, que foram gerados em big-endian, embora o ARM trabalhasse em little-endian. Cada valor de 16 bits chegava com os bytes trocados — um bias FBEB virava EBFB, as imagens nao tiveram esse problema, pois cada pixel da imagem corespondia a 8 bits.
 
 A correção foi adicionar rev16 em todos os loops de leitura de parâmetros:
 
-```asm
-ldrh  r0, [r3, r0]   @ lê 2 bytes do buffer
-rev16 r0, r0         @ corrige a ordem dos bytes
-```
+	```asm
+	ldrh  r0, [r3, r0]   @ lê 2 bytes do buffer
+	rev16 r0, r0         @ corrige a ordem dos bytes
+	```
+- Houveram problemas na hora de executar pelo terminal, mas esses são por conta da necessidade de uma execução a partir de comandos mais específicos, que estão descritos no Manual de Uso. O sudo su é necessário pois, como descrito anteriormente, o Driver tem acesso ao diretório do arquivo, então ele precisa de acesso root para abrir o /dev/mem — sem isso ele falha logo na primeira chamada. O -no-pie desativa o PIE (Position Independent Executable) para que o linker misture o main.c com o driver.s sem conflito.
+  
 # Manual de uso
 - Faça o Download de todo o conteúdo das pastas data, src e utils;
 - Modifique os diretórios e nomes dentro do arquivo main.c, para dar, corretamente para o Driver, acesso aos arquivos;
-- 
-- Como executar
+- Carregue, na placa De1-SoC, o projeto CoProcessador de Maike (https://github.com/DestinyWolf/Problema_SD_2026_1);
+- Conecte sua máquina remotamente ao terminal do Processador ARMv7, da De1-SoC;
+- Execute no terminal:
 ```bash
 sudo su
 gcc main.c driver.s -o elm -I. -no-pie
 ./elm
 ```
-O sudo su é necessário pois, como descrito anteriormente, o Driver tem acesso ao diretório do arquivo, então ele precisa de acesso root para abrir o /dev/mem — sem isso ele falha logo na primeira chamada. O -no-pie desativa o PIE (Position Independent Executable) para que o linker misture o main.c com o driver.s sem conflito.
-
 
 # Testes e Resultados
 1. Testbench
