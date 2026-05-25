@@ -115,13 +115,13 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
    - O primeiro problema foi na função mapear_fpga: estávamos passando um endereço físico errado para o mmap2. O resultado foi que todas as escritas nos registradores da FPGA iam para uma região inválida do barramento e simplesmente não chegavam ao hardware.
    - O segundo problema foi a Endianness trocada nos arquivos .bin dos parâmetros, que foram gerados em big-endian, embora o ARM trabalhasse em little-endian. Cada valor de 16 bits chegava com os bytes trocados — um bias FBEB virava EBFB, as imagens nao tiveram esse problema, pois cada pixel da imagem corespondia a 8 bits.
 
-A correção foi adicionar rev16 em todos os loops de leitura de parâmetros:
+		A correção foi adicionar rev16 em todos os loops de leitura de parâmetros:
 
-	```asm
-	ldrh  r0, [r3, r0]   @ lê 2 bytes do buffer
-	rev16 r0, r0         @ corrige a ordem dos bytes
-	```
-- Houveram problemas na hora de executar pelo terminal, mas esses são por conta da necessidade de uma execução a partir de comandos mais específicos, que estão descritos no Manual de Uso. O sudo su é necessário pois, como descrito anteriormente, o Driver tem acesso ao diretório do arquivo, então ele precisa de acesso root para abrir o /dev/mem — sem isso ele falha logo na primeira chamada. O -no-pie desativa o PIE (Position Independent Executable) para que o linker misture o main.c com o driver.s sem conflito.
+		```asm
+		ldrh  r0, [r3, r0]   @ lê 2 bytes do buffer
+		rev16 r0, r0         @ corrige a ordem dos bytes
+		```
+	- Houveram problemas na hora de executar pelo terminal, mas esses são por conta da necessidade de uma execução a partir de comandos mais específicos, que estão descritos no Manual de Uso. O sudo su é necessário pois, como descrito anteriormente, o Driver tem acesso ao diretório do arquivo, então ele precisa de acesso root para abrir o /dev/mem — sem isso ele falha logo na primeira chamada. O -no-pie desativa o PIE (Position Independent Executable) para que o linker misture o main.c com o driver.s sem conflito.
   
 # Manual de uso
 - Faça o Download de todo o conteúdo das pastas data, src e utils;
