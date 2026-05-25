@@ -9,12 +9,22 @@ O programa consiste em um arquivo .s (Código em Assembly), um arquivo .h (Arqui
 # Fundamentação Teórica
 1. MMIO
    - Para a construção do driver, foram utilizados registradores acessados através da leitura da memória do coprocessador, o que configura o uso do MMIO.
+     
 2. HPS Altera
    - Na Placa De1-SoC é possivel utilizar-se da HPS Altera, uma ponte de conexão entre o ARMv7 e os circuitos funcionando na FPGA.
    - Seu uso se dá através de canais de memória, com endereços definidos, que podem ser acessados para leitura ou escrita de dados, por ambos os lados integrados, mesmo que nenhum tenha acesso definitivo ao outro. O Driver escreve em certos endereços, as entradas do coprocessador, e em outros, realiza a leitura de sua saída.
+     
 3. AXI Bridge
    - Embora a HPS consiga conectar os dois sistemas, eles utilizam uma arquitetura de dados diferente, principalmente partindo do ARMv7 para a FPGA, o que nos obrigou a utilizar uma ponte AXI, cuja função é "traduzir" para o que o CoProcessador entende. O CoProcessador não entende, por exemplo, o ldr ou str do Assembly, apenas os sinais 1 ou 0.
    - Traduz as funções do Processador para os sinais elétricos que o CoProcessador consegue entender.
+     
+4. Endianess
+   - Endianness é o conceito que define a ordem em que os bytes de um dado numérico composto por múltiplos bytes são organizados e armazenados na memória de um computador ou transmitidos através de uma rede. Quando lidamos com dados maiores que um byte, como números inteiros de 16, 32 ou 64 bits, a arquitetura do processador precisa seguir uma regra fixa para saber qual byte vem primeiro.
+     
+   - No sistema Big-Endian, o byte mais significativo, que é aquele que carrega o maior valor numérico (como as centenas ou milhares em nossa escrita manual), é guardado no menor endereço de memória. Funciona exatamente como a escrita humana ocidental, onde lemos e escrevemos os números da esquerda para a direita, começando pelo algarismo de maior valor.
+     
+   - No sistema Little-Endian, ocorre o inverso: o byte menos significativo, que carrega o menor valor numérico (as unidades), é armazenado no menor endereço de memória. Para um observador humano que analisa a memória de forma sequencial, o número parece estar invertido, mas essa abordagem traz vantagens de desempenho para os circuitos eletrônicos do hardware, que podem começar a processar operações matemáticas básicas de forma mais direta.
+     
 # Metodologia
 Entradas: O CoProcessador deve receber as entradas do seu sistema, essas sendo o arquivo da imagem, o arquivo de pesos e o arquivo dos viéses, além dos bits da instrução, já que o CoProcessador só vai carregar, calcular ou enviar, após receber a instrução de 32bits relacionada.
 
@@ -114,7 +124,8 @@ rev16 r0, r0         @ corrige a ordem dos bytes
 ```
 # Manual de uso
 - Faça o Download de todo o conteúdo das pastas data, src e utils;
-- Modifique o diretório no arquivo 
+- Modifique os diretórios e nomes dentro do arquivo main.c, para dar, corretamente para o Driver, acesso aos arquivos;
+- 
 - Como executar
 ```bash
 sudo su
