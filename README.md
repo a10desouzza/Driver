@@ -136,8 +136,9 @@ O sudo su é necessário pois, como descrito anteriormente, o Driver tem acesso 
 
 # Testes e Resultados
 1. Testbench
-Antes de carregar qualquer parâmetro, o main chama iniciar_inferencia() de propósito, para ver se a FPGA bloqueia o comando. Depois lê o status com imprimir_status(), que decodifica o registrador de hardware e imprime flags legíveis como [BUSY] ou [ERRO]
-exemplo de como e mostrado no terminal: 
+Antes de carregar qualquer parâmetro, o main chama iniciar_inferencia() de propósito, para ver se a FPGA bloqueia o comando. Depois lê o status com imprimir_status(), que decodifica o registrador de hardware e imprime flags legíveis como [BUSY] ou [ERRO];
+
+Exemplo do Terminal:
 ```bash
 ==================================================
    TESTBENCH AUTOMATIZADO - ELM CO-PROCESSOR      
