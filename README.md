@@ -111,10 +111,8 @@ Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados d
 			Leitura direta e não-bloqueante do registrador bruto de status e diagnóstico da FPGA.
      
 4. Erros encontrados no desenvolvimento
-
-O primeiro problema foi na função mapear_fpga: estávamos passando um endereço físico errado para o mmap2. O resultado foi que todas as escritas nos registradores da FPGA iam para uma região inválida do barramento e simplesmente não chegavam ao hardware.
-
-O segundo problema foi das Endianness trocada os arquivos .bin dos parâmetros foram gerados em big-endian, mas o ARM opera em little-endian. Cada valor de 16 bits chegava com os bytes trocados — um bias FBEB virava EBFB, as imagens nao tiveram esse problema, pois cada pixel da imagem corespondia a 8 bits.
+   - O primeiro problema foi na função mapear_fpga: estávamos passando um endereço físico errado para o mmap2. O resultado foi que todas as escritas nos registradores da FPGA iam para uma região inválida do barramento e simplesmente não chegavam ao hardware.
+   - O segundo problema foi a Endianness trocada nos arquivos .bin dos parâmetros, que foram gerados em big-endian, embora o ARM trabalhasse em little-endian. Cada valor de 16 bits chegava com os bytes trocados — um bias FBEB virava EBFB, as imagens nao tiveram esse problema, pois cada pixel da imagem corespondia a 8 bits.
 
 A correção foi adicionar rev16 em todos os loops de leitura de parâmetros:
 
