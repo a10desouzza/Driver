@@ -26,9 +26,9 @@ O programa consiste em um arquivo .s (Código em Assembly), um arquivo .h (Arqui
    - No sistema Little-Endian, ocorre o inverso: o byte menos significativo, que carrega o menor valor numérico (as unidades), é armazenado no menor endereço de memória. Para um observador humano que analisa a memória de forma sequencial, o número parece estar invertido, mas essa abordagem traz vantagens de desempenho para os circuitos eletrônicos do hardware, que podem começar a processar operações matemáticas básicas de forma mais direta.
      
 # Metodologia
-Entradas: O CoProcessador deve receber as entradas do seu sistema, essas sendo o arquivo da imagem, o arquivo de pesos e o arquivo dos viéses, além dos bits da instrução, já que o CoProcessador só vai carregar, calcular ou enviar, após receber a instrução de 32bits relacionada.
+- Entradas: O CoProcessador deve receber as entradas do seu sistema, essas sendo o arquivo da imagem, o arquivo de pesos e o arquivo dos viéses, além dos bits da instrução, já que o CoProcessador só vai carregar, calcular ou enviar, após receber a instrução de 32bits relacionada.
 
-Saídas: O CoProcessador retorna, além de seu estado, o resultado da predição, encontrado após a inferência.
+- Saídas: O CoProcessador retorna, além de seu estado, o resultado da predição, encontrado após a inferência.
 Sabendo disso, nosso objetivo era criar um Driver que poderia receber os dados dos arquivos de imagens, pesos e viéses, e direcioná-los ao CoProcessador, mesmo sem ter acesso ao que acontece dentro do mesmo. Para isso, nosso primeiro problema foi entender como que o CoProcessador poderia receber esses dados, sendo que não tinhamos acesso ao seu conteúdo.
 
 1. A Comunicação
